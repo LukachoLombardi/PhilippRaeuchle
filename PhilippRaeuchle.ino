@@ -39,6 +39,7 @@ void initSteppers() {
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(9600);
   Serial.println("Welcome to");
   Serial.println(" (                                (                                         ");
   Serial.println(" )\\ )    )     (   (              )\\ )                          )  (        ");
@@ -52,7 +53,7 @@ void setup() {
   Serial.println("");
 
   scheduleFunction(MotorControl::initSteppers, ASAP);
-  runScheduler();
+  schedulerInit();
 }
 
 void loop() {
