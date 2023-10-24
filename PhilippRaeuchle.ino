@@ -52,8 +52,9 @@ void setup() {
   Serial.println("                         |_|                                                ");
   Serial.println("");
 
+  initScheduler();
   scheduleFunction(MotorControl::initSteppers, ASAP);
-  schedulerInit();
+  startScheduler();
 }
 
 void loop() {
