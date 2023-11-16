@@ -1,0 +1,18 @@
+#pragma once
+
+#define COLOR_SENSOR_PIN
+
+
+#define LEFT_MOTOR_PIN_0 8
+#define LEFT_MOTOR_PIN_1 9
+#define LEFT_MOTOR_PIN_2 10
+#define LEFT_MOTOR_PIN_3 11
+
+
+#define RIGHT_MOTOR_PIN_0 2
+#define RIGHT_MOTOR_PIN_1 4
+#define RIGHT_MOTOR_PIN_2 3
+#define RIGHT_MOTOR_PIN_3 5
+
+#define MOTOR_STEPS_PER_REVOLUTION 2048
+#define MOTOR_STEPSIZE 5

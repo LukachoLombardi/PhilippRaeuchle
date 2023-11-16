@@ -1,22 +1,16 @@
 #include <LAS.h>
 #include <LASConfig.h>
 
+#include "PhilippSettings.h"
+
 #include <Stepper.h>
-using namespace LAS;
+#include <Wire.h>
+#include <Logger.h>
+#include <Adafruit_TCS34725.h>
 
-#define LEFT_MOTOR_PIN_0 8
-#define LEFT_MOTOR_PIN_1 9
-#define LEFT_MOTOR_PIN_2 10
-#define LEFT_MOTOR_PIN_3 11
-
-
-#define RIGHT_MOTOR_PIN_0 2
-#define RIGHT_MOTOR_PIN_1 4
-#define RIGHT_MOTOR_PIN_2 3
-#define RIGHT_MOTOR_PIN_3 5
-
-#define MOTOR_STEPS_PER_REVOLUTION 2048
-#define MOTOR_STEPSIZE 5
+namespace Shared{
+  Logger logger = Logger();
+}
 
 namespace MotorControl {
 
@@ -37,6 +31,28 @@ void initSteppers() {
 }
 }
 
+namespace Sensors {
+  using namespace Shared;
+  namespace ColorSensor {
+    using namespace Shared;
+    Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X); 
+    float red, green, blue;
+
+    void readColor(){
+        tcs.getRGB(&red, &green, &blue);
+    }
+    
+    void initColorSensor() {
+        if (!tcs.begin()) {
+          logger.printline("No TCS34725 found!", "severe");
+          return;
+        }
+        LAS::scheduleRepeated(readColor, 50, ENDLESS_LOOP);
+    }
+  }
+}
+
+using namespace Shared;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -52,9 +68,14 @@ void setup() {
   Serial.println("                         |_|                                                ");
   Serial.println("");
 
-  initScheduler();
-  scheduleFunction(MotorControl::initSteppers, ASAP);
-  startScheduler();
+  Serial.begin(9600);  logger.printline("Logger started");
+  
+  logger.printline("PhilippRaeuchle started");
+ 
+  LAS::initScheduler(logger);
+  LAS::scheduleFunction(MotorControl::initSteppers, ASAP);
+  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensor, ASAP);
+  LAS::startScheduler();
 }
 
 void loop() {
