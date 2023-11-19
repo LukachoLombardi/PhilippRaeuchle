@@ -10,25 +10,144 @@
 
 namespace Shared{
   Logger logger = Logger();
+
+  char* concat(char* string0, char* string1){
+    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
+    strcat(buffer, string0);
+    strcat(buffer, string1);
+    return buffer;
+  }
+
+  char* concat(char* string0, int num){
+    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
+    sprintf(buffer, "%s%d", string0, num);
+    return buffer;
+  }
+
+  char* concat(char* string0, float num){
+    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
+    sprintf(buffer, "%s%f", string0, num);
+    return buffer;
+  }
 }
 
-namespace MotorControl {
+namespace Navigation {
+  using namespace Shared;
 
-Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
-Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
+  Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
+  Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
-void initSteppers() {
-  leftMotor.setSpeed(10);
-  rightMotor.setSpeed(10);
-  LAS::scheduleRepeated([]() {
-    leftMotor.step(MOTOR_STEPSIZE);
-  },
-                        ASAP, MOTOR_STEPS_PER_REVOLUTION / MOTOR_STEPSIZE);
-  LAS::scheduleRepeated([]() {
-    rightMotor.step(MOTOR_STEPSIZE);
-  },
-                        ASAP, MOTOR_STEPS_PER_REVOLUTION / MOTOR_STEPSIZE);
-}
+  bool motorsActive = false;
+  int currentRotation = 0;
+
+  bool checkMotorActivity(){
+    if(motorsActive){
+      logger.printline("rotation blocked because of ongoing rotation", "warning");
+      return true;
+    }
+    return false;
+  }
+
+  void initSteppers() {
+    leftMotor.setSpeed(10);
+    rightMotor.setSpeed(10);
+    logger.printline("initialized steppers");
+  }
+
+  void rotateLeftMotorAsync(int steps){
+    if(checkMotorActivity()){
+      return;
+    }
+    if(steps > 0){
+      LAS::scheduleRepeated([]() {
+      motorsActive = true;
+      leftMotor.step(MOTOR_STEPSIZE);
+      if(LAS::getActiveTask().remainingRepeats == 1){
+        motorsActive = false;
+      }
+    },
+    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    } else {
+      LAS::scheduleRepeated([]() {
+      motorsActive = true;
+      leftMotor.step(MOTOR_STEPSIZE * -1);
+      if(LAS::getActiveTask().remainingRepeats == 1){
+        motorsActive = false;
+      }
+    },
+    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    }
+    logger.printline(concat("rotating left motor by ", steps) , "debug");
+  }
+
+  void rotateRightMotorAsync(int steps){
+    if(checkMotorActivity()){
+      return;
+    }
+    if(steps > 0){
+      LAS::scheduleRepeated([]() {
+      motorsActive = true;
+      rightMotor.step(MOTOR_STEPSIZE);
+      if(LAS::getActiveTask().remainingRepeats == 1){
+        motorsActive = false;
+      }
+    },
+                          ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    } else {
+      LAS::scheduleRepeated([]() {
+      motorsActive = true;
+      rightMotor.step(MOTOR_STEPSIZE * -1);
+      if(LAS::getActiveTask().remainingRepeats == 1){
+        motorsActive = false;
+      }
+    },
+                          ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    }
+    logger.printline(concat("rotating right motor by ", steps) , "debug");
+  }
+
+  void driveStepsForward(int steps){
+    rotateRightMotorAsync(steps);
+    rotateRightMotorAsync(steps);
+    logger.printline(concat("driving forward ", steps));
+  }
+
+  void setRotationVar(float pi_mul){
+    currentRotation = pi_mul;
+    while(currentRotation >= 2){
+      currentRotation -= 2;
+    }
+  }
+
+  void RotateVehicleByAsync(float pi_mul){
+    if(checkMotorActivity()){
+      return;
+    }
+    int steps = int(ROTATION_REVOLUTIONS * (pi_mul/2) * MOTOR_STEPS_PER_REVOLUTION);
+    logger.printline(concat("rotating vehicle by pi_mul ", pi_mul));
+    //left motor task handles the advanced settings
+    LAS::scheduleRepeated([]() {
+      motorsActive = true;
+      leftMotor.step(MOTOR_STEPSIZE * -1);
+      setRotationVar(currentRotation + PI_MUL_PER_STEPSIZE);
+      if(LAS::getActiveTask().remainingRepeats == 1){
+        motorsActive = false;
+      }
+    },
+    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    LAS::scheduleRepeated([]() {
+      rightMotor.step(MOTOR_STEPSIZE);
+    },
+    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+  }
+
+  void rotateVehicleTo(float pi_mul){
+    RotateVehicleByAsync(pi_mul - currentRotation);
+  }
+
+  void driveSizeUnits(float units){
+    driveStepsForward(int(units * VEHICLE_STEPS_X));
+  }
 }
 
 namespace Sensors {
@@ -42,7 +161,7 @@ namespace Sensors {
         tcs.getRGB(&red, &green, &blue);
     }
     
-    void initColorSensor() {
+    void initColorSensorAsync() {
         if (!tcs.begin()) {
           logger.printline("No TCS34725 found!", "severe");
           return;
@@ -73,8 +192,8 @@ void setup() {
   logger.printline("PhilippRaeuchle started");
  
   LAS::initScheduler(logger);
-  LAS::scheduleFunction(MotorControl::initSteppers, ASAP);
-  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensor, ASAP);
+  LAS::scheduleFunction(Navigation::initSteppers, ASAP);
+  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensorAsync, ASAP);
   LAS::startScheduler();
 }
 
