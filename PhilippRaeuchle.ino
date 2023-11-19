@@ -168,6 +168,10 @@ namespace Sensors {
         }
         LAS::scheduleRepeated(readColor, 50, ENDLESS_LOOP);
     }
+
+    void initUltrasoundSensorsAsync() {
+
+    }
   }
 }
 
@@ -189,6 +193,7 @@ void setup() {
 
   Serial.begin(9600);  logger.printline("Logger started");
   
+  logger.init(&Serial);
   logger.printline("PhilippRaeuchle started");
  
   LAS::initScheduler(logger);
