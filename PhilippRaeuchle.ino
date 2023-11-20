@@ -164,6 +164,38 @@ namespace Sensors {
 }
 
 using namespace Shared;
+
+class: public LAS::Callable{
+    public:
+      void run() override{
+        if(Serial.available() <= 0){
+          return;
+        }
+        readSerial();
+        handleBuffer();
+      }
+
+      void readSerial(){
+        if(Serial.available()>CMD_CHAR_BUFFER_SIZE){
+          Serial.flush();
+          logger.printline("Serial input buffer too large, deleted.", "warning");
+          return;
+        }
+        memset(serialBuffer, 0, CMD_CHAR_BUFFER_SIZE * (sizeof(char)));
+        serialBuffer[CMD_CHAR_BUFFER_SIZE-1] = "\0";
+        while(Serial.available() > 0) {
+          strcat(serialBuffer, Serial.read());
+        }
+      }
+      void handleBuffer(){
+        if(strcmp(serialBuffer, "PRINTSCHEDULE") == 0){
+          LAS::printSchedule();
+        }
+      }
+    private:
+      char serialBuffer[CMD_CHAR_BUFFER_SIZE] = "";
+  } serialConsole;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -179,12 +211,14 @@ void setup() {
   Serial.println("                         |_|                                                ");
   Serial.println("");
 
-  Serial.begin(9600);  logger.printline("Logger started");
+  Serial.begin(9600);  
+  logger.printline("Logger started");
   
   logger.init(&Serial);
   logger.printline("PhilippRaeuchle started");
  
   LAS::initScheduler(logger);
+  LAS::scheduleRepeated(&serialConsole);
   LAS::scheduleFunction(Navigation::initSteppers, ASAP);
   LAS::scheduleFunction(Sensors::ColorSensor::initColorSensorAsync, ASAP);
   LAS::startScheduler();

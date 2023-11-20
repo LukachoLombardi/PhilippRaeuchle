@@ -1,6 +1,7 @@
 #pragma once
 
 
+#define CMD_CHAR_BUFFER_SIZE 16
 #define SMALL_CHAR_BUFFER_SIZE 64
 
 
