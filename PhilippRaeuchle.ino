@@ -38,7 +38,7 @@ namespace Navigation {
   Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
   bool motorsActive = false;
-  int currentRotation = 0;
+  int currentVehicleRotation = 0;
 
   bool checkMotorActivity(){
     if(motorsActive){
@@ -54,29 +54,27 @@ namespace Navigation {
     logger.printline("initialized steppers");
   }
 
+  class StepperRotator: public LAS::Callable{
+    public:
+      void run() override{
+        motorsActive = true;
+        this->stepper->step(rotationAmount);
+        if(taskPtr->remainingRepeats == 1){
+          motorsActive = false;
+        }
+      }
+      StepperRotator(Stepper *stepper, int rotationAmount): stepper(stepper), rotationAmount(rotationAmount) {}
+    private:
+      Stepper *stepper;
+      int rotationAmount;
+      int rotatedSteps = 0;
+  };
+
   void rotateLeftMotorAsync(int steps){
     if(checkMotorActivity()){
       return;
     }
-    if(steps > 0){
-      LAS::scheduleRepeated([]() {
-      motorsActive = true;
-      leftMotor.step(MOTOR_STEPSIZE);
-      if(LAS::getActiveTask().remainingRepeats == 1){
-        motorsActive = false;
-      }
-    },
-    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
-    } else {
-      LAS::scheduleRepeated([]() {
-      motorsActive = true;
-      leftMotor.step(MOTOR_STEPSIZE * -1);
-      if(LAS::getActiveTask().remainingRepeats == 1){
-        motorsActive = false;
-      }
-    },
-    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
-    }
+    LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
     logger.printline(concat("rotating left motor by ", steps) , "debug");
   }
 
@@ -84,25 +82,7 @@ namespace Navigation {
     if(checkMotorActivity()){
       return;
     }
-    if(steps > 0){
-      LAS::scheduleRepeated([]() {
-      motorsActive = true;
-      rightMotor.step(MOTOR_STEPSIZE);
-      if(LAS::getActiveTask().remainingRepeats == 1){
-        motorsActive = false;
-      }
-    },
-                          ASAP, abs(int(steps / MOTOR_STEPSIZE)));
-    } else {
-      LAS::scheduleRepeated([]() {
-      motorsActive = true;
-      rightMotor.step(MOTOR_STEPSIZE * -1);
-      if(LAS::getActiveTask().remainingRepeats == 1){
-        motorsActive = false;
-      }
-    },
-                          ASAP, abs(int(steps / MOTOR_STEPSIZE)));
-    }
+    LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
     logger.printline(concat("rotating right motor by ", steps) , "debug");
   }
 
@@ -113,9 +93,9 @@ namespace Navigation {
   }
 
   void setRotationVar(float pi_mul){
-    currentRotation = pi_mul;
-    while(currentRotation >= 2){
-      currentRotation -= 2;
+    currentVehicleRotation = pi_mul;
+    while(currentVehicleRotation >= 2){
+      currentVehicleRotation -= 2;
     }
   }
 
@@ -129,7 +109,7 @@ namespace Navigation {
     LAS::scheduleRepeated([]() {
       motorsActive = true;
       leftMotor.step(MOTOR_STEPSIZE * -1);
-      setRotationVar(currentRotation + PI_MUL_PER_STEPSIZE);
+      setRotationVar(currentVehicleRotation + PI_MUL_PER_STEPSIZE);
       if(LAS::getActiveTask().remainingRepeats == 1){
         motorsActive = false;
       }
@@ -142,7 +122,7 @@ namespace Navigation {
   }
 
   void rotateVehicleTo(float pi_mul){
-    RotateVehicleByAsync(pi_mul - currentRotation);
+    RotateVehicleByAsync(pi_mul - currentVehicleRotation);
   }
 
   void driveSizeUnits(float units){
