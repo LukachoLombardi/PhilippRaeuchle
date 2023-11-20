@@ -188,8 +188,13 @@ class: public LAS::Callable{
         }
       }
       void handleBuffer(){
-        if(strcmp(serialBuffer, "PRINTSCHEDULE") == 0){
+        if(strcmp(serialBuffer, "HALT") == 0){
+          logger.printline("HALTING EXECUTION!", "severe");
+          while(true);
+        }
+        if(strcmp(serialBuffer, "TASKS") == 0){
           LAS::printSchedule();
+          return;
         }
       }
     private:
