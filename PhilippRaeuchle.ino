@@ -134,19 +134,27 @@ namespace Sensors {
   using namespace Shared;
   namespace ColorSensor {
     using namespace Shared;
-    Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X); 
-    float red, green, blue;
+    Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
-    void readColor(){
-        tcs.getRGB(&red, &green, &blue);
+    void readColor(float *r, float *g, float *b){
+      tcs.getRGB(r, g, b);
     }
+
+    class: public LAS::Callable{
+      public:
+        void run() override{
+          readColor(&red, &green, &blue);
+        }
+      private:
+        float red, green, blue;
+    } colorReader;
     
     void initColorSensorAsync() {
         if (!tcs.begin()) {
           logger.printline("No TCS34725 found!", "severe");
           return;
         }
-        LAS::scheduleRepeated(readColor, 50, ENDLESS_LOOP);
+        LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP);
     }
 
     void initUltrasoundSensorsAsync() {
