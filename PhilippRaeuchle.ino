@@ -10,25 +10,6 @@
 
 namespace Shared{
   Logger logger = Logger();
-
-  char* concat(char* string0, char* string1){
-    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
-    strcat(buffer, string0);
-    strcat(buffer, string1);
-    return buffer;
-  }
-
-  char* concat(char* string0, int num){
-    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
-    sprintf(buffer, "%s%d", string0, num);
-    return buffer;
-  }
-
-  char* concat(char* string0, float num){
-    char buffer[SMALL_CHAR_BUFFER_SIZE] = {};
-    sprintf(buffer, "%s%f", string0, num);
-    return buffer;
-  }
 }
 
 namespace Navigation {
@@ -75,7 +56,9 @@ namespace Navigation {
       return;
     }
     LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
-    logger.printline(concat("rotating left motor by ", steps) , "debug");
+    char buffer [BUFFER_SIZE] = "";
+    snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
+    logger.printline(buffer , "debug");
   }
 
   void rotateRightMotorAsync(int steps){
@@ -83,13 +66,17 @@ namespace Navigation {
       return;
     }
     LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
-    logger.printline(concat("rotating right motor by ", steps) , "debug");
+    char buffer [BUFFER_SIZE] = "";
+    snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
+    logger.printline(buffer , "debug");
   }
 
   void driveStepsForward(int steps){
     rotateRightMotorAsync(steps);
     rotateRightMotorAsync(steps);
-    logger.printline(concat("driving forward ", steps));
+    char buffer [BUFFER_SIZE] = "";
+    snprintf(buffer, BUFFER_SIZE, "driving %d steps", steps);
+    logger.printline(buffer , "info");
   }
 
   void setRotationVar(float pi_mul){
@@ -104,7 +91,9 @@ namespace Navigation {
       return;
     }
     int steps = int(ROTATION_REVOLUTIONS * (pi_mul/2) * MOTOR_STEPS_PER_REVOLUTION);
-    logger.printline(concat("rotating vehicle by pi_mul ", pi_mul));
+    char buffer [BUFFER_SIZE] = "";
+    snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
+    logger.printline(buffer, "info");
     //left motor task handles the advanced settings
     LAS::scheduleRepeated([]() {
       motorsActive = true;
@@ -121,7 +110,7 @@ namespace Navigation {
     ASAP, abs(int(steps / MOTOR_STEPSIZE)));
   }
 
-  void rotateVehicleTo(float pi_mul){
+  void rotateVehicleToAsync(float pi_mul){
     RotateVehicleByAsync(pi_mul - currentVehicleRotation);
   }
 
@@ -168,16 +157,17 @@ using namespace Shared;
 class: public LAS::Callable{
     public:
       void run() override{
-        Serial.println(Serial.available());
         if(Serial.available() <= 0){
           return;
         }
+        delay(1000);
         readSerial();
         handleBuffer();
       }
 
       void readSerial(){
-        memset(serialBuffer, 0, CMD_CHAR_BUFFER_SIZE * (sizeof(char)));
+        logger.printline("RECEIVING COMMAND");
+        memset(serialBuffer, 0, BUFFER_SIZE * (sizeof(char)));
         strcat(serialBuffer, "\0");
         while(Serial.available() > 0) {
           char serialByte[2] = "";
@@ -186,6 +176,11 @@ class: public LAS::Callable{
         }
       }
       void handleBuffer(){
+        char buffer[BUFFER_SIZE] = "";
+        memset(buffer, 0, BUFFER_SIZE * (sizeof(char)));
+        strcat(buffer, "ATEMPTING COMMAND ");
+        strcat(buffer, serialBuffer);
+        logger.printline(buffer);
         if(strcmp(serialBuffer, "HALT") == 0){
           logger.printline("HALTING EXECUTION!", "severe");
           while(true);
@@ -196,7 +191,7 @@ class: public LAS::Callable{
         }
       }
     private:
-      char serialBuffer[CMD_CHAR_BUFFER_SIZE] = "";
+      char serialBuffer[BUFFER_SIZE] = "";
   } serialConsole;
 
 void setup() {

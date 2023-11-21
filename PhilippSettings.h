@@ -1,8 +1,7 @@
 #pragma once
 
 
-#define CMD_CHAR_BUFFER_SIZE 64
-#define SMALL_CHAR_BUFFER_SIZE 64
+#define BUFFER_SIZE 64
 
 #define BAUDRATE 115200
 
