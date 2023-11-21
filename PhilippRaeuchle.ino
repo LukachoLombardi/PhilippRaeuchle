@@ -189,6 +189,19 @@ class: public LAS::Callable{
           LAS::printSchedule();
           return;
         }
+        if(strcmp(serialBuffer, "CLEARTASKS") == 0){
+          LAS::clearSchedule();
+          LAS::scheduleRepeated(this);
+          return;
+        }
+        if(strcmp(serialBuffer, "CLEARALLTASKS") == 0){ //also clears itself
+          LAS::clearSchedule();
+          return;
+        }
+        if(strcmp(serialBuffer, "STEPPERTEST") == 0){
+          Navigation::RotateVehicleByAsync(2);
+          return;
+        }
       }
     private:
       char serialBuffer[BUFFER_SIZE] = "";
