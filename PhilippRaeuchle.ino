@@ -168,6 +168,7 @@ using namespace Shared;
 class: public LAS::Callable{
     public:
       void run() override{
+        Serial.println(Serial.available());
         if(Serial.available() <= 0){
           return;
         }
@@ -176,15 +177,12 @@ class: public LAS::Callable{
       }
 
       void readSerial(){
-        if(Serial.available()>CMD_CHAR_BUFFER_SIZE){
-          Serial.flush();
-          logger.printline("Serial input buffer too large, deleted.", "warning");
-          return;
-        }
         memset(serialBuffer, 0, CMD_CHAR_BUFFER_SIZE * (sizeof(char)));
-        serialBuffer[CMD_CHAR_BUFFER_SIZE-1] = "\0";
+        strcat(serialBuffer, "\0");
         while(Serial.available() > 0) {
-          strcat(serialBuffer, Serial.read());
+          char serialByte[2] = "";
+          serialByte[0] = Serial.read();
+          strcat(serialBuffer, serialByte);
         }
       }
       void handleBuffer(){
@@ -203,7 +201,9 @@ class: public LAS::Callable{
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  interrupts();
+  
+  Serial.begin(BAUDRATE);
   Serial.println("Welcome to");
   Serial.println(" (                                (                                         ");
   Serial.println(" )\\ )    )     (   (              )\\ )                          )  (        ");
@@ -215,20 +215,17 @@ void setup() {
   Serial.println("|_|  |_||_||_||_| |_| |_|| .__/  |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  ");
   Serial.println("                         |_|                                                ");
   Serial.println("");
-
-  Serial.begin(9600);  
-  logger.printline("Logger started");
-  
-  logger.init(&Serial);
+    
   logger.printline("PhilippRaeuchle started");
  
   LAS::initScheduler(logger);
+
   LAS::scheduleRepeated(&serialConsole);
-  LAS::scheduleFunction(Navigation::initSteppers, ASAP);
-  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensorAsync, ASAP);
+  LAS::scheduleFunction(Navigation::initSteppers);
+  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensorAsync);
   LAS::startScheduler();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
+  }

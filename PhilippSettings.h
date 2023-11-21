@@ -1,8 +1,10 @@
 #pragma once
 
 
-#define CMD_CHAR_BUFFER_SIZE 16
+#define CMD_CHAR_BUFFER_SIZE 64
 #define SMALL_CHAR_BUFFER_SIZE 64
+
+#define BAUDRATE 115200
 
 
 #define VEHICLE_STEPS_X 100
