@@ -121,9 +121,7 @@ namespace Navigation {
 
 namespace Sensors {
   using namespace Shared;
-  namespace ColorSensor {
-    using namespace Shared;
-    Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+  Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
     void readColor(float *r, float *g, float *b){
       tcs.getRGB(r, g, b);
@@ -137,6 +135,46 @@ namespace Sensors {
       private:
         float red, green, blue;
     } colorReader;
+
+    class DistanceReader: public LAS::Callable{
+      public:
+        void run() override {
+          pulseIn = 0;
+          //error correction
+          if(pulseIn - pulseOut > ULTRASOUND_ERROR_THRESHOLD){
+            if(ULTRASOUND_VALIDATION_CYCLES > validationCounter) { 
+              validationCounter++;
+              return;
+            }
+            else {
+              validationCounter = 0;
+            }
+          }
+          pulseDelay = max(-1, pulseIn - pulseOut);
+          pulseOut = micros();
+          pulse();
+          attachInterrupt(digitalPinToInterrupt(inPin), pulseInISR, CHANGE);
+        }
+        DistanceReader(int outPin, int inPin) {
+          this->outPin = outPin;
+          pinMode(outPin, OUTPUT);
+          pinMode(inPin, INPUT);
+        }
+      private:
+        int validationCounter = 0;
+        int outPin;
+        long pulseOut = 0;
+        volatile long pulseIn = 0;
+        int pulseDelay = 0;
+        void pulse() {
+          digitalWrite(outPin, LOW);
+          digitalWrite(outPin, HIGH);
+          digitalWrite(outPin, LOW);
+        }
+        void pulseInISR(){
+          pulseIn = micros();
+        }
+    };
     
     void initColorSensorAsync() {
         if (!tcs.begin()) {
@@ -149,7 +187,6 @@ namespace Sensors {
     void initUltrasoundSensorsAsync() {
 
     }
-  }
 }
 
 using namespace Shared;
@@ -225,7 +262,7 @@ void setup() {
 
   LAS::scheduleRepeated(&serialConsole);
   LAS::scheduleFunction(Navigation::initSteppers);
-  LAS::scheduleFunction(Sensors::ColorSensor::initColorSensorAsync);
+  LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::startScheduler();
 }
 
