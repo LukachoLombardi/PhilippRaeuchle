@@ -202,6 +202,10 @@ class: public LAS::Callable{
           Navigation::RotateVehicleByAsync(2);
           return;
         }
+        if(strcmp(serialBuffer, "PHILIPP") == 0){
+          //add algorithm execution here
+          return true;
+        }
       }
     private:
       char serialBuffer[BUFFER_SIZE] = "";
