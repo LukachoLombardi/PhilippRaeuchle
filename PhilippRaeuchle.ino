@@ -199,20 +199,31 @@ class: public LAS::Callable{
         }
         delay(1000);
         readSerial();
-        handleBuffer();
+        execute();
       }
 
-      void readSerial(){
+      void simulateInput(char* input) {
+        strcpy(serialBuffer, input);
+        execute();
+      }
+    private:
+    void readSerial(){
         logger.printline("RECEIVING COMMAND");
-        memset(serialBuffer, 0, BUFFER_SIZE * (sizeof(char)));
-        strcat(serialBuffer, "\0");
+        strcpy(serialBuffer, "");
         while(Serial.available() > 0) {
           char serialByte[2] = "";
           serialByte[0] = Serial.read();
           strcat(serialBuffer, serialByte);
         }
       }
-      void handleBuffer(){
+      void execute(){
+        if(handleBuffer()){
+          logger.printline("EXECUTION SUCCESSFUL");
+        } else {
+          logger.printline("EXECUTION FAILED: CMD NOT FOUND");
+        }
+      }
+      bool handleBuffer(){
         char buffer[BUFFER_SIZE] = "";
         memset(buffer, 0, BUFFER_SIZE * (sizeof(char)));
         strcat(buffer, "ATEMPTING COMMAND ");
@@ -224,27 +235,58 @@ class: public LAS::Callable{
         }
         if(strcmp(serialBuffer, "TASKS") == 0){
           LAS::printSchedule();
-          return;
+          return true;
         }
         if(strcmp(serialBuffer, "CLEARTASKS") == 0){
           LAS::clearSchedule();
           LAS::scheduleRepeated(this);
-          return;
+          return true;
         }
         if(strcmp(serialBuffer, "CLEARALLTASKS") == 0){ //also clears itself
           LAS::clearSchedule();
-          return;
+          return true;
+        }
+        if(strcmp(serialBuffer, "STOPCONSOLE") == 0){
+          this->taskPtr->isActive = false;
+          return true;
+        }
+        if(strcmp(serialBuffer, "TOGGLEINFO") == 0){
+          Logger::LogConfig conf = logger.getConf();
+          conf.info ^= true;
+          logger.setConf(conf);
+          return true;
+        }
+        if(strcmp(serialBuffer, "TOGGLEDEBUG") == 0){
+          Logger::LogConfig conf = logger.getConf();
+          conf.debug ^= true;
+          logger.setConf(conf);          return;
+        }
+        if(strcmp(serialBuffer, "TOGGLEWARNING") == 0){
+          Logger::LogConfig conf = logger.getConf();
+          conf.warning ^= true;
+          logger.setConf(conf);
+          return true;
         }
         if(strcmp(serialBuffer, "STEPPERTEST") == 0){
-          Navigation::RotateVehicleByAsync(2);
-          return;
+          Navigation::RotateVehicleByAsync(1);
+          return true;
         }
+<<<<<<< Updated upstream
         if(strcmp(serialBuffer, "PHILIPP") == 0){
           //add algorithm execution here
           return true;
         }
+=======
+        if(strcmp(serialBuffer, "RESET") == 0){
+          logger.printline("USER RESET...", "severe");
+          delay(1000);
+          void(* resetFunc) (void) = 0;
+          resetFunc();
+          return true;
+        }
+        return false;
+>>>>>>> Stashed changes
       }
-    private:
       char serialBuffer[BUFFER_SIZE] = "";
   } serialConsole;
 
