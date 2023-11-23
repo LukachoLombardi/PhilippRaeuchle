@@ -86,7 +86,35 @@ namespace Navigation {
     }
   }
 
-  void RotateVehicleByAsync(float pi_mul){
+  class VehicleRotation: public LAS::Callable {
+    public:
+      void run() override {
+        motorsActive = true;
+        if(alternate){
+          leftMotor.step(stepSize * -1);
+        } else {
+          rightMotor.step(stepSize);
+        }
+        setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE/2));
+          if(taskPtr->remainingRepeats == 1){
+            motorsActive = false;
+          }
+        alternate = !alternate;
+      }
+      VehicleRotation(bool directionL): directionL(directionL){
+        if(directionL){
+          stepSize = MOTOR_STEPSIZE;
+        } else {
+          stepSize = MOTOR_STEPSIZE * -1;
+        }
+      };
+    private:
+      bool alternate = false;
+      bool directionL = true;
+      int stepSize;
+  };
+
+  void rotateVehicleByAsync(float pi_mul){
     if(checkMotorActivity()){
       return;
     }
@@ -94,24 +122,15 @@ namespace Navigation {
     char buffer [BUFFER_SIZE] = "";
     snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
     logger.printline(buffer, "info");
-    //left motor task handles the advanced settings
-    LAS::scheduleRepeated([]() {
-      motorsActive = true;
-      leftMotor.step(MOTOR_STEPSIZE * -1);
-      setRotationVar(currentVehicleRotation + PI_MUL_PER_STEPSIZE);
-      if(LAS::getActiveTask().remainingRepeats == 1){
-        motorsActive = false;
-      }
-    },
-    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
-    LAS::scheduleRepeated([]() {
-      rightMotor.step(MOTOR_STEPSIZE);
-    },
-    ASAP, abs(int(steps / MOTOR_STEPSIZE)));
+    bool l = true;
+    if(steps<0){
+      l = false;
+    }
+    LAS::scheduleRepeated(new VehicleRotation(l), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
   }
 
   void rotateVehicleToAsync(float pi_mul){
-    RotateVehicleByAsync(pi_mul - currentVehicleRotation);
+    rotateVehicleByAsync(pi_mul - currentVehicleRotation);
   }
 
   void driveSizeUnits(float units){
@@ -141,8 +160,8 @@ namespace Sensors {
         void run() override {
           pulseIn = 0;
           //error correction
-          if(pulseIn - pulseOut > ULTRASOUND_ERROR_THRESHOLD){
-            if(ULTRASOUND_VALIDATION_CYCLES > validationCounter) { 
+          if(pulseIn - pulseOut > ULTRASONIC_VALIDATION_THRESHOLD){
+            if(ULTRASONIC_VALIDATION_CYCLES > validationCounter) { 
               validationCounter++;
               return;
             }
@@ -153,7 +172,6 @@ namespace Sensors {
           pulseDelay = max(-1, pulseIn - pulseOut);
           pulseOut = micros();
           pulse();
-          attachInterrupt(digitalPinToInterrupt(inPin), pulseInISR, CHANGE);
         }
         DistanceReader(int outPin, int inPin) {
           this->outPin = outPin;
@@ -163,6 +181,7 @@ namespace Sensors {
       private:
         int validationCounter = 0;
         int outPin;
+        int inPin;
         long pulseOut = 0;
         volatile long pulseIn = 0;
         int pulseDelay = 0;
@@ -171,10 +190,14 @@ namespace Sensors {
           digitalWrite(outPin, HIGH);
           digitalWrite(outPin, LOW);
         }
-        void pulseInISR(){
+        void pulseInISRHandler(){
           pulseIn = micros();
         }
     };
+
+    void initUltrasonicAsync(){
+
+    }
     
     void initColorSensorAsync() {
         if (!tcs.begin()) {
@@ -182,10 +205,6 @@ namespace Sensors {
           return;
         }
         LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP);
-    }
-
-    void initUltrasoundSensorsAsync() {
-
     }
 }
 
@@ -268,15 +287,13 @@ class: public LAS::Callable{
           return true;
         }
         if(strcmp(serialBuffer, "STEPPERTEST") == 0){
-          Navigation::RotateVehicleByAsync(1);
+          Navigation::rotateVehicleByAsync(1);
           return true;
         }
-<<<<<<< Updated upstream
         if(strcmp(serialBuffer, "PHILIPP") == 0){
           //add algorithm execution here
           return true;
         }
-=======
         if(strcmp(serialBuffer, "RESET") == 0){
           logger.printline("USER RESET...", "severe");
           delay(1000);
@@ -285,7 +302,6 @@ class: public LAS::Callable{
           return true;
         }
         return false;
->>>>>>> Stashed changes
       }
       char serialBuffer[BUFFER_SIZE] = "";
   } serialConsole;
