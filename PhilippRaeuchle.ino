@@ -197,7 +197,7 @@ class: public LAS::Callable{
         if(Serial.available() <= 0){
           return;
         }
-        delay(1000);
+        delay(10);
         readSerial();
         execute();
       }
