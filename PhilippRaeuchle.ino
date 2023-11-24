@@ -10,6 +10,9 @@
 
 namespace Shared{
   Logger logger = Logger();
+  void printPhilipp(){
+    Serial.println("\r\n\r\n (                                  (                                         \r\n )\\ )    )     (                    )\\ )                          )  (        \r\n(()/( ( /( (   )\\ (                (()/(    )    (    (        ( /(  )\\   (   \r\n /(_)))\\()))\\ ((_))\\  `  )   `  )   /(_))( /(   ))\\  ))\\   (   )\\())((_) ))\\  \r\n(_)) ((_)\\((_) _ ((_) /(/(   /(/(  (_))  )(_)) /((_)/((_)  )\\ ((_)\\  _  /((_) \r\n| _ \\| |(_)(_)| | (_)((_)_\\ ((_)_\\ | _ \\((_)_ (_)) (_))(  ((_)| |(_)| |(_))   \r\n|  _/| \' \\ | || | | || \'_ \\)| \'_ \\)|   // _` |/ -_)| || |/ _| | \' \\ | |/ -_)  \r\n|_|  |_||_||_||_| |_|| .__/ | .__/ |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  \r\n                     |_|    |_|                                             ");
+  }
 }
 
 namespace Navigation {
@@ -217,6 +220,7 @@ namespace Sensors {
     void initUltrasonicAsync(){
       registerUsISRs();
       LAS::scheduleRepeated(pulse, ULTRASONIC_DELAY, ENDLESS_LOOP);
+      logger.printline("initialized Ultrasonic");
     }
     
     void initColorSensorAsync() {
@@ -225,6 +229,7 @@ namespace Sensors {
           return;
         }
         LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
+        logger.printline("initialized TCS");
     }
 }
 
@@ -298,7 +303,8 @@ class: public LAS::Callable{
         if(strcmp(serialBuffer, "TOGGLEDEBUG") == 0){
           Logger::LogConfig conf = logger.getConf();
           conf.debug ^= true;
-          logger.setConf(conf);          return;
+          logger.setConf(conf);          
+          return true;
         }
         if(strcmp(serialBuffer, "TOGGLEWARNING") == 0){
           Logger::LogConfig conf = logger.getConf();
@@ -311,12 +317,12 @@ class: public LAS::Callable{
           return true;
         }
         if(strcmp(serialBuffer, "PHILIPP") == 0){
-          //add algorithm execution here
+          printPhilipp();
           return true;
         }
         if(strcmp(serialBuffer, "RESET") == 0){
           logger.printline("USER RESET...", "severe");
-          delay(1000);
+          delay(10);
           void(* resetFunc) (void) = 0;
           resetFunc();
           return true;
@@ -332,8 +338,7 @@ void setup() {
   
   Serial.begin(BAUDRATE);
   Serial.println("Welcome to");
-  Serial.println("\r\n\r\n (                                  (                                         \r\n )\\ )    )     (                    )\\ )                          )  (        \r\n(()/( ( /( (   )\\ (                (()/(    )    (    (        ( /(  )\\   (   \r\n /(_)))\\()))\\ ((_))\\  `  )   `  )   /(_))( /(   ))\\  ))\\   (   )\\())((_) ))\\  \r\n(_)) ((_)\\((_) _ ((_) /(/(   /(/(  (_))  )(_)) /((_)/((_)  )\\ ((_)\\  _  /((_) \r\n| _ \\| |(_)(_)| | (_)((_)_\\ ((_)_\\ | _ \\((_)_ (_)) (_))(  ((_)| |(_)| |(_))   \r\n|  _/| \' \\ | || | | || \'_ \\)| \'_ \\)|   // _` |/ -_)| || |/ _| | \' \\ | |/ -_)  \r\n|_|  |_||_||_||_| |_|| .__/ | .__/ |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  \r\n                     |_|    |_|                                             ");
-    
+  printPhilipp();
   logger.printline("PhilippRaeuchle started");
  
   LAS::initScheduler(logger);
