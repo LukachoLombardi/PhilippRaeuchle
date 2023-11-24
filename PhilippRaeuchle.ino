@@ -207,11 +207,11 @@ namespace Sensors {
     }
 
     void registerUsISRs(){
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_LOW_IN), CHANGE, usFwLowISR);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_HIGH_IN), CHANGE, usFwHighISR);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_LEFT_IN), CHANGE, usLeftISR);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_RIGHT_IN), CHANGE, usRightISR);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_DOWN_IN), CHANGE, usDownISR);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_LOW_IN), usFwLowISR, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_HIGH_IN), usFwHighISR, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_LEFT_IN), usLeftISR, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_RIGHT_IN), usRightISR, CHANGE);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_DOWN_IN), usDownISR, CHANGE);
     }
 
     void initUltrasonicAsync(){
