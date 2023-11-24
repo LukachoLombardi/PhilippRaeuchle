@@ -155,48 +155,68 @@ namespace Sensors {
         float red, green, blue;
     } colorReader;
 
-    class DistanceReader: public LAS::Callable{
-      public:
-        void run() override {
-          pulseIn = 0;
+    struct USReader{
+      long pulseDelay = 0;
+      int validationCounter = 0;
+    };
+    USReader usFwLow = USReader();
+    USReader usFwHigh = USReader();
+    USReader usLeft = USReader();
+    USReader usRight = USReader();
+    USReader usDown = USReader();
+
+    long pulseOut = 0;
+    void sendPulse(int pin){
+      digitalWrite(pin, LOW);
+      digitalWrite(pin, HIGH);
+      digitalWrite(pin, LOW);
+    }
+
+    void pulse(){
+      pulseOut = micros();
+      sendPulse(ULTRASONIC_OUT);
+    }
+
+    void calcPulseDelay(USReader *reader, long pulseIn){
           //error correction
           if(pulseIn - pulseOut > ULTRASONIC_VALIDATION_THRESHOLD){
-            if(ULTRASONIC_VALIDATION_CYCLES > validationCounter) { 
-              validationCounter++;
+            if(ULTRASONIC_VALIDATION_CYCLES > reader->validationCounter) { 
+              reader->validationCounter++;
               return;
             }
             else {
-              validationCounter = 0;
+              reader->validationCounter = 0;
             }
           }
-          pulseDelay = max(-1, pulseIn - pulseOut);
-          pulseOut = micros();
-          pulse();
-        }
-        DistanceReader(int outPin, int inPin) {
-          this->outPin = outPin;
-          pinMode(outPin, OUTPUT);
-          pinMode(inPin, INPUT);
-        }
-      private:
-        int validationCounter = 0;
-        int outPin;
-        int inPin;
-        long pulseOut = 0;
-        volatile long pulseIn = 0;
-        int pulseDelay = 0;
-        void pulse() {
-          digitalWrite(outPin, LOW);
-          digitalWrite(outPin, HIGH);
-          digitalWrite(outPin, LOW);
-        }
-        void pulseInISRHandler(){
-          pulseIn = micros();
-        }
-    };
+          reader->pulseDelay = max(-1, pulseIn - pulseOut);
+    }
+    void usFwLowISR(){
+      calcPulseDelay(&usFwLow, micros());
+    }
+    void usFwHighISR(){
+      calcPulseDelay(&usFwHigh, micros());
+    }
+    void usLeftISR(){
+      calcPulseDelay(&usLeft, micros());
+    }
+    void usRightISR(){
+      calcPulseDelay(&usRight, micros());
+    }
+    void usDownISR(){
+      calcPulseDelay(&usDown, micros());
+    }
+
+    void registerUsISRs(){
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_LOW_IN), CHANGE, usFwLowISR);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_HIGH_IN), CHANGE, usFwHighISR);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_LEFT_IN), CHANGE, usLeftISR);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_RIGHT_IN), CHANGE, usRightISR);
+      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_DOWN_IN), CHANGE, usDownISR);
+    }
 
     void initUltrasonicAsync(){
-
+      registerUsISRs();
+      LAS::scheduleRepeated(pulse, ULTRASONIC_DELAY, ENDLESS_LOOP);
     }
     
     void initColorSensorAsync() {
@@ -204,7 +224,7 @@ namespace Sensors {
           logger.printline("No TCS34725 found!", "severe");
           return;
         }
-        LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP);
+        LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
     }
 }
 
@@ -318,9 +338,10 @@ void setup() {
  
   LAS::initScheduler(logger);
 
-  LAS::scheduleRepeated(&serialConsole);
+  LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
+  LAS::scheduleFunction(Sensors::initUltrasonicAsync);
   LAS::startScheduler();
 }
 
