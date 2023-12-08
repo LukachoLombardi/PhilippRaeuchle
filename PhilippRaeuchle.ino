@@ -266,6 +266,9 @@ class: public LAS::Callable{
         while(Serial.available() > 0) {
           char serialByte[2] = "";
           serialByte[0] = Serial.read();
+          if(strcmp(serialByte, "\n") == 0){
+            break;
+          } 
           strcat(serialBuffer, serialByte);
         }
       }
@@ -279,8 +282,9 @@ class: public LAS::Callable{
       bool handleBuffer(){
         char buffer[BUFFER_SIZE] = "";
         memset(buffer, 0, BUFFER_SIZE * (sizeof(char)));
-        strcat(buffer, "ATEMPTING COMMAND ");
+        strcat(buffer, "ATEMPTING COMMAND \"");
         strcat(buffer, serialBuffer);
+        strcat(buffer, "\""); 
         logger.printline(buffer);
         if(strcmp(serialBuffer, "HALT") == 0){
           logger.printline("HALTING EXECUTION!", "severe");
