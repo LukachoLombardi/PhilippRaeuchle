@@ -33,8 +33,8 @@ namespace Sensors {
     } colorReader;
 
     struct USReader{
-      long pulseDelay = 0;
-      int validationCounter = 0;
+      volatile long pulseDelay = -1;
+      volatile int validationCounter = 0;
     };
     USReader usFwLow = USReader();
     USReader usFwHigh = USReader();
@@ -83,13 +83,18 @@ namespace Sensors {
       calcPulseDelay(&usDown, micros());
     }
 
-    void registerUsISRs(){
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_LOW_IN), usFwLowISR, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_HIGH_IN), usFwHighISR, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_LEFT_IN), usLeftISR, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_RIGHT_IN), usRightISR, CHANGE);
-      attachInterrupt(digitalPinToInterrupt(ULTRASONIC_DOWN_IN), usDownISR, CHANGE);
-    }
+void registerUsISRs() {
+  pinMode(ULTRASONIC_FORWARD_LOW_IN, INPUT);
+  pinMode(ULTRASONIC_FORWARD_HIGH_IN, INPUT);
+  pinMode(ULTRASONIC_LEFT_IN, INPUT);
+  pinMode(ULTRASONIC_RIGHT_IN, INPUT);
+  pinMode(ULTRASONIC_DOWN_IN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_LOW_IN), usFwLowISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ULTRASONIC_FORWARD_HIGH_IN), usFwHighISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ULTRASONIC_LEFT_IN), usLeftISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ULTRASONIC_RIGHT_IN), usRightISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ULTRASONIC_DOWN_IN), usDownISR, CHANGE);
+}
 
     void initUltrasonicAsync(){
       registerUsISRs();
@@ -234,8 +239,13 @@ namespace Navigation {
 
   class: public LAS::Callable {
     void run() override {
-      if(Sensors::usFwLow.pulseDelay > 100 || Sensors::usFwLow.pulseDelay != -1) {
-        driveStepsForward(100);
+      if(!Navigation::motorsActive) {
+        char buffer[BUFFER_SIZE] = "";
+        snprintf(buffer, sizeof(buffer), "UsFwLow: %d", Sensors::usFwLow.pulseDelay);
+        logger.printline(buffer);
+        if(Sensors::usFwLow.pulseDelay > 100 || Sensors::usFwLow.pulseDelay != -1) {
+          driveStepsForward(100);
+        }
       }
     }
   } driver;
