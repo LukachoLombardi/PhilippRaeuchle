@@ -317,6 +317,10 @@ class: public LAS::Callable{
           this->taskPtr->isActive = false;
           return true;
         }
+        if(strcmp(serialBuffer, "UNBLOCKMOTOR") == 0){
+          Navigation::motorsActive = false;
+          return true;
+        }
         if(strcmp(serialBuffer, "TOGGLEINFO") == 0){
           Logger::LogConfig conf = logger.getConf();
           conf.info ^= true;
