@@ -190,7 +190,8 @@ namespace Navigation {
     if(checkMotorActivity()){
       return;
     }
-    LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
+    int repeats = steps/MOTOR_STEPSIZE;
+    LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), repeats);
     char buffer [BUFFER_SIZE] = "";
     snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
     logger.printline(buffer , "debug");
@@ -200,7 +201,8 @@ namespace Navigation {
     if(checkMotorActivity()){
       return;
     }
-    LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), steps/MOTOR_STEPSIZE);
+    int repeats = steps/MOTOR_STEPSIZE;
+    LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), repeats);
     char buffer [BUFFER_SIZE] = "";
     snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
     logger.printline(buffer , "debug");
