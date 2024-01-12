@@ -173,8 +173,10 @@ namespace Navigation {
       void run() override{
         motorsActive = true;
         this->stepper->step(rotationAmount);
+        rotatedSteps += rotationAmount;
         if(taskPtr->remainingRepeats == 1){
           motorsActive = false;
+          return;
         }
       }
       StepperRotator(Stepper *stepper, int rotationAmount): stepper(stepper), rotationAmount(rotationAmount) {}
