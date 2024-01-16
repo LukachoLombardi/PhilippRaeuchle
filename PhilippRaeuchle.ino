@@ -9,342 +9,440 @@
 #include <Adafruit_TCS34725.h>
 #include <Adafruit_VL53L0X.h>
 
-namespace Shared{
-  Logger logger = Logger();
-  void printPhilipp(){
-    Serial.println("\r\n\r\n (                                  (                                         \r\n )\\ )    )     (                    )\\ )                          )  (        \r\n(()/( ( /( (   )\\ (                (()/(    )    (    (        ( /(  )\\   (   \r\n /(_)))\\()))\\ ((_))\\  `  )   `  )   /(_))( /(   ))\\  ))\\   (   )\\())((_) ))\\  \r\n(_)) ((_)\\((_) _ ((_) /(/(   /(/(  (_))  )(_)) /((_)/((_)  )\\ ((_)\\  _  /((_) \r\n| _ \\| |(_)(_)| | (_)((_)_\\ ((_)_\\ | _ \\((_)_ (_)) (_))(  ((_)| |(_)| |(_))   \r\n|  _/| \' \\ | || | | || \'_ \\)| \'_ \\)|   // _` |/ -_)| || |/ _| | \' \\ | |/ -_)  \r\n|_|  |_||_||_||_| |_|| .__/ | .__/ |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  \r\n                     |_|    |_|                                             ");
-  }
+namespace Shared {
+Logger logger = Logger();
+void printPhilipp() {
+  Serial.println("\r\n\r\n (                                  (                                         \r\n )\\ )    )     (                    )\\ )                          )  (        \r\n(()/( ( /( (   )\\ (                (()/(    )    (    (        ( /(  )\\   (   \r\n /(_)))\\()))\\ ((_))\\  `  )   `  )   /(_))( /(   ))\\  ))\\   (   )\\())((_) ))\\  \r\n(_)) ((_)\\((_) _ ((_) /(/(   /(/(  (_))  )(_)) /((_)/((_)  )\\ ((_)\\  _  /((_) \r\n| _ \\| |(_)(_)| | (_)((_)_\\ ((_)_\\ | _ \\((_)_ (_)) (_))(  ((_)| |(_)| |(_))   \r\n|  _/| \' \\ | || | | || \'_ \\)| \'_ \\)|   // _` |/ -_)| || |/ _| | \' \\ | |/ -_)  \r\n|_|  |_||_||_||_| |_|| .__/ | .__/ |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  \r\n                     |_|    |_|                                             ");
+}
 }
 
 namespace Sensors {
-  using namespace Shared;
-  Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
-  Adafruit_VL53L0X tof_fw_low = Adafruit_VL53L0X();
-  Adafruit_VL53L0X tof_fw_high = Adafruit_VL53L0X();
-  Adafruit_VL53L0X tof_left = Adafruit_VL53L0X();
-  Adafruit_VL53L0X tof_right = Adafruit_VL53L0X();
-  Adafruit_VL53L0X tof_down = Adafruit_VL53L0X();
+using namespace Shared;
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+Adafruit_VL53L0X tof_fw_low = Adafruit_VL53L0X();
+Adafruit_VL53L0X tof_fw_high = Adafruit_VL53L0X();
+Adafruit_VL53L0X tof_left = Adafruit_VL53L0X();
+Adafruit_VL53L0X tof_right = Adafruit_VL53L0X();
+Adafruit_VL53L0X tof_down = Adafruit_VL53L0X();
 
-  void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr){
-    digitalWrite(xshutPin, HIGH);
-    tof.begin();
-    tof.setAddress(addr);
+VL53L0X_RangingMeasurementData_t tof_measure_fw_low;
+VL53L0X_RangingMeasurementData_t tof_measure_fw_high;
+VL53L0X_RangingMeasurementData_t tof_measure_left;
+VL53L0X_RangingMeasurementData_t tof_measure_right;
+VL53L0X_RangingMeasurementData_t tof_measure_down;
+
+void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
+  digitalWrite(xshutPin, HIGH);
+  tof.begin();
+  tof.setAddress(addr);
+}
+
+void readTOFMMs() {
+  logger.printline("measuring TOFs...", "debug");
+  tof_fw_low.rangingTest(&tof_measure_fw_low, false);
+  tof_fw_high.rangingTest(&tof_measure_fw_high, false);
+  tof_left.rangingTest(&tof_measure_left, false);
+  tof_right.rangingTest(&tof_measure_right, false);
+  tof_down.rangingTest(&tof_measure_left, false);
+}
+
+void initTOFSensorsAsync() {
+  pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
+  pinMode(TOF_XSHUT_FW_HIGH, OUTPUT);
+  pinMode(TOF_XSHUT_LEFT, OUTPUT);
+  pinMode(TOF_XSHUT_RIGHT, OUTPUT);
+  pinMode(TOF_XSHUT_DOWN, OUTPUT);
+  pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
+
+  digitalWrite(TOF_XSHUT_FW_HIGH, LOW);
+  digitalWrite(TOF_XSHUT_FW_LOW, LOW);
+  digitalWrite(TOF_XSHUT_LEFT, LOW);
+  digitalWrite(TOF_XSHUT_RIGHT, LOW);
+  digitalWrite(TOF_XSHUT_DOWN, LOW);
+
+  TOFAddrInit(tof_fw_low, TOF_XSHUT_FW_LOW, 0x2A);
+  TOFAddrInit(tof_fw_high, TOF_XSHUT_FW_HIGH, 0x2B);
+  TOFAddrInit(tof_left, TOF_XSHUT_LEFT, 0x2C);
+  TOFAddrInit(tof_right, TOF_XSHUT_RIGHT, 0x2D);
+  TOFAddrInit(tof_down, TOF_XSHUT_DOWN, 0x2E);
+}
+
+void readColor(float *r, float *g, float *b) {
+  tcs.getRGB(r, g, b);
+}
+
+class : public LAS::Callable {
+public:
+  void run() override {
+    readColor(&red, &green, &blue);
   }
-  
-  void initTOFSensorsAsync() {
-    pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
-    pinMode(TOF_XSHUT_FW_HIGH, OUTPUT);
-    pinMode(TOF_XSHUT_LEFT, OUTPUT);
-    pinMode(TOF_XSHUT_RIGHT, OUTPUT);
-    pinMode(TOF_XSHUT_DOWN, OUTPUT);
-    pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
+private:
+  float red, green, blue;
+} colorReader;
 
-    digitalWrite(TOF_XSHUT_FW_HIGH, LOW);
-    digitalWrite(TOF_XSHUT_FW_LOW, LOW);
-    digitalWrite(TOF_XSHUT_LEFT, LOW);
-    digitalWrite(TOF_XSHUT_RIGHT, LOW);
-    digitalWrite(TOF_XSHUT_DOWN, LOW);
-
-    TOFAddrInit(tof_fw_low, TOF_XSHUT_FW_LOW, 0x2A);
-    TOFAddrInit(tof_fw_high, TOF_XSHUT_FW_HIGH, 0x2B);
-    TOFAddrInit(tof_left, TOF_XSHUT_LEFT, 0x2C);
-    TOFAddrInit(tof_right, TOF_XSHUT_RIGHT, 0x2D);
-    TOFAddrInit(tof_down, TOF_XSHUT_DOWN, 0x2E);
+void initColorSensorAsync() {
+  if (!tcs.begin()) {
+    logger.printline("No TCS34725 found!", "severe");
+    return;
   }
-
-  void readColor(float *r, float *g, float *b){
-    tcs.getRGB(r, g, b);
-  }
-
-  class: public LAS::Callable{
-    public:
-      void run() override{
-        readColor(&red, &green, &blue);
-      }
-    private:
-      float red, green, blue;
-  } colorReader;
-  
-  void initColorSensorAsync() {
-    if (!tcs.begin()) {
-      logger.printline("No TCS34725 found!", "severe");
-      return;
-    }
-    LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
-    logger.printline("initialized TCS");
-  }
+  LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
+  logger.printline("initialized TCS");
+}
 }
 
 namespace Navigation {
-  using namespace Shared;
+using namespace Shared;
 
-  Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
-  Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
+Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
+Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
-  bool motorsActive = false;
-  int currentVehicleRotation = 0;
+bool motorsActive = false;
+int currentVehicleRotation = 0;
 
-  bool checkMotorActivity(){
-    if(motorsActive){
-      logger.printline("rotation blocked because of ongoing rotation", "warning");
-      return true;
-    }
-    return false;
+bool checkMotorActivity() {
+  if (motorsActive) {
+    logger.printline("rotation blocked because of ongoing rotation", "warning");
+    return true;
   }
+  return false;
+}
 
-  void initSteppers() {
-    leftMotor.setSpeed(10);
-    rightMotor.setSpeed(10);
-    logger.printline("initialized steppers");
-  }
+void initSteppers() {
+  leftMotor.setSpeed(10);
+  rightMotor.setSpeed(10);
+  logger.printline("initialized steppers");
+}
 
-  class StepperRotator: public LAS::Callable{
-    public:
-      void run() override{
-        motorsActive = true;
-        this->stepper->step(rotationAmount);
-        rotatedSteps += rotationAmount;
-        if(taskPtr->remainingRepeats == 1){
-          motorsActive = false;
-          return;
-        }
+class StepperRotator : public LAS::Callable {
+public:
+  void run() override {
+    if (!isPaused) {
+      motorsActive = true;
+      this->stepper->step(rotationAmount);
+      rotatedSteps += rotationAmount;
+      if (taskPtr->remainingRepeats == 1) {
+        motorsActive = false;
+        return;
       }
-      StepperRotator(Stepper *stepper, int rotationAmount): stepper(stepper), rotationAmount(rotationAmount) {}
-    private:
-      Stepper *stepper;
-      int rotationAmount;
-      int rotatedSteps = 0;
+    }
+  }
+  void pause() {
+    motorsActive = false;
+    isPaused = true;
+  }
+  void resume() {
+    motorsActive = true;
+    isPaused = false;
+  }
+  void isActive() {
+    return !isPaused;
+  }
+  StepperRotator(Stepper *stepper, int rotationAmount)
+    : stepper(stepper), rotationAmount(rotationAmount) {}
+private:
+  Stepper *stepper;
+  bool isPaused = false;
+  int rotationAmount;
+  int rotatedSteps = 0;
+};
+
+void rotateLeftMotorAsync(int steps) {
+  if (checkMotorActivity()) {
+    return;
+  }
+  int repeats = steps / MOTOR_STEPSIZE;
+  LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), repeats);
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
+  logger.printline(buffer, "debug");
+}
+
+void rotateRightMotorAsync(int steps) {
+  if (checkMotorActivity()) {
+    return;
+  }
+  int repeats = steps / MOTOR_STEPSIZE;
+  LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), repeats);
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
+  logger.printline(buffer, "debug");
+}
+
+StepperRotator *scheduleConstantRightRotatorAsync() {
+  if (checkMotorActivity()) {
+    return;
+  }
+  StepperRotator *rotator = new StepperRotator(&rightMotor, MOTOR_STEPSIZE);
+  LAS::scheduleRepeated(rotator);
+  if (checkMotorActivity()) {
+    rotator->pause();
+  }
+  logger.printline("start const driving right motor", "debug");
+  return rotator;
+}
+
+StepperRotator *scheduleConstantLeftRotatorAsync() {
+  StepperRotator *rotator = new StepperRotator(&rightMotor, MOTOR_STEPSIZE);
+  LAS::scheduleRepeated(rotator);
+  if (checkMotorActivity()) {
+    rotator->pause();
+  }
+  logger.printline("start const driving left motor", "debug");
+  return rotator;
+}
+
+void driveStepsForward(int steps) {
+  rotateRightMotorAsync(steps);
+  rotateRightMotorAsync(steps);
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "driving %d steps", steps);
+  logger.printline(buffer, "info");
+}
+
+void setRotationVar(float pi_mul) {
+  currentVehicleRotation = pi_mul;
+  while (currentVehicleRotation >= 2) {
+    currentVehicleRotation -= 2;
+  }
+}
+
+class VehicleRotation : public LAS::Callable {
+public:
+  void run() override {
+    motorsActive = true;
+    if (alternate) {
+      leftMotor.step(stepSize * -1);
+    } else {
+      rightMotor.step(stepSize);
+    }
+    setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE / 2));
+    if (taskPtr->remainingRepeats == 1) {
+      motorsActive = false;
+    }
+    alternate = !alternate;
+  }
+  VehicleRotation(bool directionL)
+    : directionL(directionL) {
+    if (directionL) {
+      stepSize = MOTOR_STEPSIZE;
+    } else {
+      stepSize = MOTOR_STEPSIZE * -1;
+    }
   };
+private:
+  bool alternate = false;
+  bool directionL = true;
+  int stepSize;
+};
 
-  void rotateLeftMotorAsync(int steps){
-    if(checkMotorActivity()){
-      return;
-    }
-    int repeats = steps/MOTOR_STEPSIZE;
-    LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), repeats);
-    char buffer [BUFFER_SIZE] = "";
-    snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
-    logger.printline(buffer , "debug");
+void rotateVehicleByAsync(float pi_mul) {
+  if (checkMotorActivity()) {
+    return;
   }
-
-  void rotateRightMotorAsync(int steps){
-    if(checkMotorActivity()){
-      return;
-    }
-    int repeats = steps/MOTOR_STEPSIZE;
-    LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps)/steps)), repeats);
-    char buffer [BUFFER_SIZE] = "";
-    snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
-    logger.printline(buffer , "debug");
+  int steps = int(ROTATION_REVOLUTIONS * (pi_mul / 2) * MOTOR_STEPS_PER_REVOLUTION);
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
+  logger.printline(buffer, "info");
+  bool l = true;
+  if (steps < 0) {
+    l = false;
   }
+  LAS::scheduleRepeated(new VehicleRotation(l), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
+}
 
-  void driveStepsForward(int steps){
-    rotateRightMotorAsync(steps);
-    rotateRightMotorAsync(steps);
-    char buffer [BUFFER_SIZE] = "";
-    snprintf(buffer, BUFFER_SIZE, "driving %d steps", steps);
-    logger.printline(buffer , "info");
-  }
+void rotateVehicleToAsync(float pi_mul) {
+  rotateVehicleByAsync(pi_mul - currentVehicleRotation);
+}
 
-  void setRotationVar(float pi_mul){
-    currentVehicleRotation = pi_mul;
-    while(currentVehicleRotation >= 2){
-      currentVehicleRotation -= 2;
-    }
-  }
+void driveSizeUnits(float units) {
+  driveStepsForward(int(units * VEHICLE_STEPS_X));
+}
 
-  class VehicleRotation: public LAS::Callable {
-    public:
-      void run() override {
-        motorsActive = true;
-        if(alternate){
-          leftMotor.step(stepSize * -1);
-        } else {
-          rightMotor.step(stepSize);
-        }
-        setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE/2));
-          if(taskPtr->remainingRepeats == 1){
-            motorsActive = false;
-          }
-        alternate = !alternate;
+class : public LAS::Callable {
+public:
+  void run() override {
+    Sensors::readTOFMMs();
+    if (Sensors::tof_measure_down.RangeMilliMeter >= MAX_TABLE_DISTANCE) {
+      logger.printline("end of table reached. TRANSFER mode start.");
+      pauseDriving();
+      if(state == DRIVE) {
+        state = TRANSFER;
       }
-      VehicleRotation(bool directionL): directionL(directionL){
-        if(directionL){
-          stepSize = MOTOR_STEPSIZE;
-        } else {
-          stepSize = MOTOR_STEPSIZE * -1;
-        }
-      };
-    private:
-      bool alternate = false;
-      bool directionL = true;
-      int stepSize;
-  };
-
-  void rotateVehicleByAsync(float pi_mul){
-    if(checkMotorActivity()){
+      if(state == AVOID) {
+        //implement special logic here
+      }
       return;
     }
-    int steps = int(ROTATION_REVOLUTIONS * (pi_mul/2) * MOTOR_STEPS_PER_REVOLUTION);
-    char buffer [BUFFER_SIZE] = "";
-    snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
-    logger.printline(buffer, "info");
-    bool l = true;
-    if(steps<0){
-      l = false;
-    }
-    LAS::scheduleRepeated(new VehicleRotation(l), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
-  }
-
-  void rotateVehicleToAsync(float pi_mul){
-    rotateVehicleByAsync(pi_mul - currentVehicleRotation);
-  }
-
-  void driveSizeUnits(float units){
-    driveStepsForward(int(units * VEHICLE_STEPS_X));
-  }
-
-  class: public LAS::Callable {
-    void run() override {
-      if(!Navigation::motorsActive) {
-        char buffer[BUFFER_SIZE] = "";
-        snprintf(buffer, sizeof(buffer), "UsFwLow: %d", Sensors::usFwLow.pulseDelay);
-        logger.printline(buffer);
-        if(Sensors::usFwLow.pulseDelay > 100 || Sensors::usFwLow.pulseDelay != -1) {
-          driveStepsForward(100);
-        }
+    logger.printline("running drive routine...");
+    int fw_dist = Sensors::tof_measure_fw_low.RangeMilliMeter;
+    if (state == DRIVE) {
+      if (Sensors::tof_measure_fw_low.RangeStatus == 4 || (Sensors::tof_measure_fw_low.RangeStatus != 4 && fw_dist > SAFETY_DISTANCE)) {
+        logger.printline("no obstacle detected", "debug");
+        ResumeDriving();
+      } else {
+        logger.printline("obstacle detected! Starting AVOID behaviour");
+        state = AVOID;
+        pauseDriving();
       }
     }
-  } driver;
+  }
+  void pauseDriving() {
+    logger.printline("setting steppers inactive", "debug");
+    rotatorLeft->pause();
+    rotatorRight->pause();
+  }
+  void ResumeDriving() {
+    logger.printline("setting steppers active", "debug");
+    rotatorLeft->resume();
+    rotatorRight->resume();
+  }
+private:
+  enum Direction { FW,
+                   BW };
+  Direction direction = FW;
+  enum NavState { DRIVE,
+                  AVOID,
+                  COLLECT,
+                  TRANSFER,
+                  FINISH };
+  NavState state = DRIVE;
+  StepperRotator *rotatorLeft = Navigation::scheduleConstantLeftRotatorAsync();
+  StepperRotator *rotatorRight = Navigation::scheduleConstantRightRotatorAsync();
+} driver;
 
 }
 
 using namespace Shared;
 
-class: public LAS::Callable{
-    public:
-      void run() override{
-        if(Serial.available() <= 0){
-          return;
-        }
-        delay(10);
-        readSerial();
-        execute();
-      }
+class : public LAS::Callable {
+public:
+  void run() override {
+    if (Serial.available() <= 0) {
+      return;
+    }
+    delay(10);
+    readSerial();
+    execute();
+  }
 
-      void simulateInput(char* input) {
-        strcpy(serialBuffer, input);
-        execute();
+  void simulateInput(char *input) {
+    strcpy(serialBuffer, input);
+    execute();
+  }
+private:
+  void readSerial() {
+    logger.printline("RECEIVING COMMAND");
+    strcpy(serialBuffer, "");
+    while (Serial.available() > 0) {
+      char serialByte[2] = "";
+      serialByte[0] = Serial.read();
+      if (strcmp(serialByte, "\n") == 0) {
+        break;
       }
-    private:
-    void readSerial(){
-        logger.printline("RECEIVING COMMAND");
-        strcpy(serialBuffer, "");
-        while(Serial.available() > 0) {
-          char serialByte[2] = "";
-          serialByte[0] = Serial.read();
-          if(strcmp(serialByte, "\n") == 0){
-            break;
-          } 
-          strcat(serialBuffer, serialByte);
-        }
-      }
-      void execute(){
-        if(handleBuffer()){
-          logger.printline("EXECUTION SUCCESSFUL");
-        } else {
-          logger.printline("EXECUTION FAILED: CMD NOT FOUND");
-        }
-      }
-      bool handleBuffer(){
-        char buffer[BUFFER_SIZE] = "";
-        memset(buffer, 0, BUFFER_SIZE * (sizeof(char)));
-        strcat(buffer, "ATEMPTING COMMAND \"");
-        strcat(buffer, serialBuffer);
-        strcat(buffer, "\""); 
-        logger.printline(buffer);
-        if(strcmp(serialBuffer, "HALT") == 0){
-          logger.printline("HALTING EXECUTION!", "severe");
-          while(true);
-        }
-        if(strcmp(serialBuffer, "TASKS") == 0){
-          LAS::printSchedule();
-          return true;
-        }
-        if(strcmp(serialBuffer, "CLEARTASKS") == 0){
-          LAS::clearSchedule();
-          LAS::scheduleRepeated(this);
-          return true;
-        }
-        if(strcmp(serialBuffer, "CLEARALLTASKS") == 0){ //also clears itself
-          LAS::clearSchedule();
-          return true;
-        }
-        if(strcmp(serialBuffer, "STOPCONSOLE") == 0){
-          this->taskPtr->isActive = false;
-          return true;
-        }
-        if(strcmp(serialBuffer, "UNBLOCKMOTOR") == 0){
-          Navigation::motorsActive = false;
-          return true;
-        }
-        if(strcmp(serialBuffer, "TOGGLEINFO") == 0){
-          Logger::LogConfig conf = logger.getConf();
-          conf.info ^= true;
-          logger.setConf(conf);
-          return true;
-        }
-        if(strcmp(serialBuffer, "TOGGLEDEBUG") == 0){
-          Logger::LogConfig conf = logger.getConf();
-          conf.debug ^= true;
-          logger.setConf(conf);          
-          return true;
-        }
-        if(strcmp(serialBuffer, "TOGGLEWARNING") == 0){
-          Logger::LogConfig conf = logger.getConf();
-          conf.warning ^= true;
-          logger.setConf(conf);
-          return true;
-        }
-        if(strcmp(serialBuffer, "STEPPERTEST") == 0){
-          Navigation::rotateVehicleByAsync(1);
-          return true;
-        }
-        if(strcmp(serialBuffer, "PHILIPP") == 0){
-          printPhilipp();
-          LAS::scheduleRepeated(&Navigation::driver, ASAP, ENDLESS_LOOP, false);
-          return true;
-        }
-        if(strcmp(serialBuffer, "RESET") == 0){
-          logger.printline("USER RESET...", "severe");
-          delay(10);
-          void(* resetFunc) (void) = 0;
-          resetFunc();
-          return true;
-        }
-        return false;
-      }
-      char serialBuffer[BUFFER_SIZE] = "";
-  } serialConsole;
+      strcat(serialBuffer, serialByte);
+    }
+  }
+  void execute() {
+    if (handleBuffer()) {
+      logger.printline("EXECUTION SUCCESSFUL");
+    } else {
+      logger.printline("EXECUTION FAILED: CMD NOT FOUND");
+    }
+  }
+  bool handleBuffer() {
+    char buffer[BUFFER_SIZE] = "";
+    memset(buffer, 0, BUFFER_SIZE * (sizeof(char)));
+    strcat(buffer, "ATTEMPTING COMMAND \"");
+    strcat(buffer, serialBuffer);
+    strcat(buffer, "\"");
+    logger.printline(buffer);
+    if (strcmp(serialBuffer, "HALT") == 0) {
+      logger.printline("HALTING EXECUTION!", "severe");
+      while (true)
+        ;
+    }
+    if (strcmp(serialBuffer, "TASKS") == 0) {
+      LAS::printSchedule();
+      return true;
+    }
+    if (strcmp(serialBuffer, "CLEARTASKS") == 0) {
+      LAS::clearSchedule();
+      LAS::scheduleRepeated(this);
+      return true;
+    }
+    if (strcmp(serialBuffer, "CLEARALLTASKS") == 0) {  //also clears itself
+      LAS::clearSchedule();
+      return true;
+    }
+    if (strcmp(serialBuffer, "STOPCONSOLE") == 0) {
+      this->taskPtr->isActive = false;
+      return true;
+    }
+    if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
+      Navigation::motorsActive = false;
+      return true;
+    }
+    if (strcmp(serialBuffer, "TOGGLEINFO") == 0) {
+      Logger::LogConfig conf = logger.getConf();
+      conf.info ^= true;
+      logger.setConf(conf);
+      return true;
+    }
+    if (strcmp(serialBuffer, "TOGGLEDEBUG") == 0) {
+      Logger::LogConfig conf = logger.getConf();
+      conf.debug ^= true;
+      logger.setConf(conf);
+      return true;
+    }
+    if (strcmp(serialBuffer, "TOGGLEWARNING") == 0) {
+      Logger::LogConfig conf = logger.getConf();
+      conf.warning ^= true;
+      logger.setConf(conf);
+      return true;
+    }
+    if (strcmp(serialBuffer, "STEPPERTEST") == 0) {
+      Navigation::rotateVehicleByAsync(1);
+      return true;
+    }
+    if (strcmp(serialBuffer, "DRIVETEST") == 0) {
+      Navigation::driveSizeUnits(5);
+      Navigation::driveSizeUnits(-5);
+      return true;
+    }
+    if (strcmp(serialBuffer, "PHILIPP") == 0) {
+      printPhilipp();
+      LAS::scheduleRepeated(&Navigation::driver, ASAP, ENDLESS_LOOP, false);
+      return true;
+    }
+    if (strcmp(serialBuffer, "RESET") == 0) {
+      logger.printline("USER RESET...", "severe");
+      delay(10);
+      void (*resetFunc)(void) = 0;
+      resetFunc();
+      return true;
+    }
+    return false;
+  }
+  char serialBuffer[BUFFER_SIZE] = "";
+} serialConsole;
 
 void setup() {
   // put your setup code here, to run once:
   interrupts();
-  
+
   Serial.begin(BAUDRATE);
   Serial.println("Welcome to");
   printPhilipp();
   logger.printline("PhilippRaeuchle started");
- 
+
   LAS::initScheduler(logger);
 
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   LAS::scheduleFunction(Navigation::initSteppers);
-  LAS::scheduleFunction(Sensors::initColorSensorAsync);
-  LAS::scheduleFunction(Sensors::initUltrasonicAsync);
+  //LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::startScheduler();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  }
+}
