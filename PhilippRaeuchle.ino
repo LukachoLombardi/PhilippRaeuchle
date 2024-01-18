@@ -96,16 +96,7 @@ using namespace Shared;
 Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
 Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
-bool motorsActive = false;
 int currentVehicleRotation = 0;
-
-bool checkMotorActivity() {
-  if (motorsActive) {
-    logger.printline("rotation blocked because of ongoing rotation", "warning");
-    return true;
-  }
-  return false;
-}
 
 void initSteppers() {
   leftMotor.setSpeed(10);
@@ -137,6 +128,12 @@ public:
   void isActive() {
     return !isPaused;
   }
+  static bool areActive() {
+    return motorsActive;
+  }
+  static void unblock() {
+    motorsActive = false;
+  }
   StepperRotator(Stepper *stepper, int rotationAmount)
     : stepper(stepper), rotationAmount(rotationAmount) {}
 private:
@@ -144,7 +141,16 @@ private:
   bool isPaused = false;
   int rotationAmount;
   int rotatedSteps = 0;
+  static inline bool motorsActive = false;
 };
+
+bool checkMotorActivity() {
+  if (StepperRotator::areActive()) {
+    logger.printline("rotation blocked because of ongoing rotation", "warning");
+    return true;
+  }
+  return false;
+}
 
 void rotateLeftMotorAsync(int steps) {
   if (checkMotorActivity()) {
@@ -169,9 +175,6 @@ void rotateRightMotorAsync(int steps) {
 }
 
 StepperRotator *scheduleConstantRightRotatorAsync() {
-  if (checkMotorActivity()) {
-    return;
-  }
   StepperRotator *rotator = new StepperRotator(&rightMotor, MOTOR_STEPSIZE);
   LAS::scheduleRepeated(rotator);
   if (checkMotorActivity()) {
@@ -204,12 +207,15 @@ void setRotationVar(float pi_mul) {
   while (currentVehicleRotation >= 2) {
     currentVehicleRotation -= 2;
   }
+  while (currentVehicleRotation < 0) {
+    currentVehicleRotation += 2;
+  }
 }
 
 class VehicleRotation : public LAS::Callable {
 public:
   void run() override {
-    motorsActive = true;
+    rotationActive = true;
     if (alternate) {
       leftMotor.step(stepSize * -1);
     } else {
@@ -217,7 +223,7 @@ public:
     }
     setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE / 2));
     if (taskPtr->remainingRepeats == 1) {
-      motorsActive = false;
+      rotationActive = false;
     }
     alternate = !alternate;
   }
@@ -229,14 +235,18 @@ public:
       stepSize = MOTOR_STEPSIZE * -1;
     }
   };
+  static bool isRotationActive() {
+    return rotationActive;
+  }
 private:
   bool alternate = false;
   bool directionL = true;
   int stepSize;
+  static inline bool rotationActive = false;
 };
 
 void rotateVehicleByAsync(float pi_mul) {
-  if (checkMotorActivity()) {
+  if (VehicleRotation::isRotationActive()) {
     return;
   }
   int steps = int(ROTATION_REVOLUTIONS * (pi_mul / 2) * MOTOR_STEPS_PER_REVOLUTION);
