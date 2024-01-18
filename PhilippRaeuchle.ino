@@ -437,7 +437,7 @@ private:
       return true;
     }
     if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
-      Navigation::motorsActive = false;
+      Navigation::StepperRotator::unblock();
       return true;
     }
     if (strcmp(serialBuffer, "TOGGLEINFO") == 0) {
