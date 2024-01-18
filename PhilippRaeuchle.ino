@@ -295,7 +295,7 @@ public:
     if (state == DRIVE) {
       if ((Sensors::tof_measure_fw_low.RangeStatus != 4 && Sensors::tof_measure_fw_low.RangeMilliMeter >= SAFETY_DISTANCE)) {
         logger.printline("no obstacle detected", "debug");
-        ResumeDriving();
+        resumeDriving();
       } else {
         logger.printline("obstacle detected! Starting AVOID behaviour");
         setState(AVOID_ENTRY);
@@ -303,7 +303,7 @@ public:
         rotateVehicleByAsync(3 / 2);
       }
     } else if (state == AVOID_ENTRY) {
-      if (Sensors::tof_measure_left.RangeStatus != 4 && Sensors::tof_measure_left.RangeMilliMeter >= DETECTION_DISTANCE) {
+      if (Sensors::tof_measure_left.RangeStatus != 4 && Sensors::tof_measure_left.RangeMilliMeter >= UNITY_DISTANCE) {
         resumeDriving();
       } else {
         pauseDriving();
@@ -362,7 +362,7 @@ private:
     rotatorLeft->pause();
     rotatorRight->pause();
   }
-  void ResumeDriving() {
+  void resumeDriving() {
     logger.printline("setting steppers active", "debug");
     rotatorLeft->resume();
     rotatorRight->resume();
