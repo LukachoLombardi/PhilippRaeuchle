@@ -336,6 +336,12 @@ public:
       }
     }
   }
+  int getStateId() {
+    return int(state);
+  }
+  int getAvoidStage() {
+    return avoidStage;
+  }
 private:
   enum NavState { DRIVE = 0,
                   AVOID_ENTRY = 1,
@@ -465,6 +471,13 @@ private:
     if (strcmp(serialBuffer, "DRIVETEST") == 0) {
       Navigation::driveSizeUnits(5);
       Navigation::driveSizeUnits(-5);
+      return true;
+    }
+    if (strcmp(serialBuffer, "NAVINFO") == 0) {
+      char buffer[BUFFER_SIZE];
+      strcpy(buffer, "");
+      snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", Navigation::currentVehicleRotation, Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
+      logger.printline(buffer);
       return true;
     }
     if (strcmp(serialBuffer, "PHILIPP") == 0) {
