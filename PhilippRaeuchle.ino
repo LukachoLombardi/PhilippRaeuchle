@@ -259,6 +259,12 @@ public:
   int getAvoidStage() {
     return avoidStage;
   }
+  void init() {
+    delete rotatorLeft;
+    delete rotatorRight;
+    rotatorLeft = Navigation::scheduleConstantLeftRotatorAsync();
+    rotatorRight = Navigation::scheduleConstantRightRotatorAsync();
+  }
 private:
   enum NavState { DRIVE = 0,
                   AVOID_ENTRY = 1,
@@ -287,8 +293,8 @@ private:
   int lastLDist = 0;
   bool directionR = true;
   NavState state = DRIVE;
-  StepperRotator *rotatorLeft = Navigation::scheduleConstantLeftRotatorAsync();
-  StepperRotator *rotatorRight = Navigation::scheduleConstantRightRotatorAsync();
+  StepperRotator *rotatorLeft = nullptr;
+  StepperRotator *rotatorRight = nullptr;
 } driver;
 
 }
@@ -424,9 +430,10 @@ void setup() {
   logger.printline("PhilippRaeuchle started");
 
   LAS::initScheduler(logger);
+  Navigation::driver.init();
 
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
-  LAS::scheduleFunction(Navigation::initSteppers);
+  //LAS::scheduleFunction(Navigation::initSteppers);
   //LAS::scheduleFunction(Sensors::initColorSensorAsync);
   //add tof and driver
 
