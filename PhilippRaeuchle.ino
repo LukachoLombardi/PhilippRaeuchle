@@ -47,6 +47,12 @@ void readTOFMMs() {
 }
 
 void initTOFSensorsAsync() {
+  tof_fw_low.begin();
+  tof_fw_high.begin();
+  tof_left.begin();
+  tof_right.begin();
+  tof_down.begin();
+
   pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
   pinMode(TOF_XSHUT_FW_HIGH, OUTPUT);
   pinMode(TOF_XSHUT_LEFT, OUTPUT);
@@ -511,6 +517,8 @@ void setup() {
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   LAS::scheduleFunction(Navigation::initSteppers);
   //LAS::scheduleFunction(Sensors::initColorSensorAsync);
+  //add tof and driver
+
   LAS::startScheduler();
 }
 
