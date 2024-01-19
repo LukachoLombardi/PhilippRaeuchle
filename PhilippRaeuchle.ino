@@ -2,6 +2,8 @@
 #include <LASConfig.h>
 
 #include "PhilippSettings.h"
+#include "StepperRotator.h"
+#include "VehicleRotation.h"
 
 #include <Stepper.h>
 #include <Wire.h>
@@ -96,53 +98,11 @@ using namespace Shared;
 Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
 Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
-int currentVehicleRotation = 0;
-
 void initSteppers() {
   leftMotor.setSpeed(10);
   rightMotor.setSpeed(10);
   logger.printline("initialized steppers");
 }
-
-class StepperRotator : public LAS::Callable {
-public:
-  void run() override {
-    if (!isPaused) {
-      motorsActive = true;
-      this->stepper->step(rotationAmount);
-      rotatedSteps += rotationAmount;
-      if (taskPtr->remainingRepeats == 1) {
-        motorsActive = false;
-        return;
-      }
-    }
-  }
-  void pause() {
-    motorsActive = false;
-    isPaused = true;
-  }
-  void resume() {
-    motorsActive = true;
-    isPaused = false;
-  }
-  void isActive() {
-    return !isPaused;
-  }
-  static bool areActive() {
-    return motorsActive;
-  }
-  static void unblock() {
-    motorsActive = false;
-  }
-  StepperRotator(Stepper *stepper, int rotationAmount)
-    : stepper(stepper), rotationAmount(rotationAmount) {}
-private:
-  Stepper *stepper;
-  bool isPaused = false;
-  int rotationAmount;
-  int rotatedSteps = 0;
-  static inline bool motorsActive = false;
-};
 
 bool checkMotorActivity() {
   if (StepperRotator::areActive()) {
@@ -202,49 +162,6 @@ void driveStepsForward(int steps) {
   logger.printline(buffer, "info");
 }
 
-void setRotationVar(float pi_mul) {
-  currentVehicleRotation = pi_mul;
-  while (currentVehicleRotation >= 2) {
-    currentVehicleRotation -= 2;
-  }
-  while (currentVehicleRotation < 0) {
-    currentVehicleRotation += 2;
-  }
-}
-
-class VehicleRotation : public LAS::Callable {
-public:
-  void run() override {
-    rotationActive = true;
-    if (alternate) {
-      leftMotor.step(stepSize * -1);
-    } else {
-      rightMotor.step(stepSize);
-    }
-    setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE / 2));
-    if (taskPtr->remainingRepeats == 1) {
-      rotationActive = false;
-    }
-    alternate = !alternate;
-  }
-  VehicleRotation(bool directionL)
-    : directionL(directionL) {
-    if (directionL) {
-      stepSize = MOTOR_STEPSIZE;
-    } else {
-      stepSize = MOTOR_STEPSIZE * -1;
-    }
-  };
-  static bool isRotationActive() {
-    return rotationActive;
-  }
-private:
-  bool alternate = false;
-  bool directionL = true;
-  int stepSize;
-  static inline bool rotationActive = false;
-};
-
 void rotateVehicleByAsync(float pi_mul) {
   if (VehicleRotation::isRotationActive()) {
     return;
@@ -257,11 +174,11 @@ void rotateVehicleByAsync(float pi_mul) {
   if (steps < 0) {
     l = false;
   }
-  LAS::scheduleRepeated(new VehicleRotation(l), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
+  LAS::scheduleRepeated(new VehicleRotation(l, &leftMotor, &rightMotor), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
 }
 
 void rotateVehicleToAsync(float pi_mul) {
-  rotateVehicleByAsync(pi_mul - currentVehicleRotation);
+  rotateVehicleByAsync(pi_mul - VehicleRotation::getCurrentVehicleRotation());
 }
 
 void driveSizeUnits(float units) {
@@ -443,7 +360,7 @@ private:
       return true;
     }
     if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
-      Navigation::StepperRotator::unblock();
+      StepperRotator::unblock();
       return true;
     }
     if (strcmp(serialBuffer, "TOGGLEINFO") == 0) {
@@ -476,7 +393,7 @@ private:
     if (strcmp(serialBuffer, "NAVINFO") == 0) {
       char buffer[BUFFER_SIZE];
       strcpy(buffer, "");
-      snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", Navigation::currentVehicleRotation, Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
+      snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
       logger.printline(buffer);
       return true;
     }
@@ -511,6 +428,8 @@ void setup() {
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   LAS::scheduleFunction(Navigation::initSteppers);
   //LAS::scheduleFunction(Sensors::initColorSensorAsync);
+  //add tof and driver
+
   LAS::startScheduler();
 }
 
