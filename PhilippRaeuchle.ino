@@ -281,7 +281,7 @@ private:
     logger.printline(buffer);
   }
   void pauseDriving() {
-    logger.printline("setting steppers inactive", "debug");
+    logger.printline("setting steppers inactive", "debug"); // might wanna get rid of these
     rotatorLeft->pause();
     rotatorRight->pause();
   }
@@ -433,8 +433,9 @@ void setup() {
   Navigation::driver.init();
 
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
-  //LAS::scheduleFunction(Navigation::initSteppers);
-  //LAS::scheduleFunction(Sensors::initColorSensorAsync);
+  LAS::scheduleFunction(Navigation::initSteppers);
+  LAS::scheduleFunction(Sensors::initColorSensorAsync);
+  LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
   //add tof and driver
 
   LAS::startScheduler();
