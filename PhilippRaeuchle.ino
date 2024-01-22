@@ -16,6 +16,11 @@ Logger logger = Logger();
 void printPhilipp() {
   Serial.println("\r\n\r\n (                                  (                                         \r\n )\\ )    )     (                    )\\ )                          )  (        \r\n(()/( ( /( (   )\\ (                (()/(    )    (    (        ( /(  )\\   (   \r\n /(_)))\\()))\\ ((_))\\  `  )   `  )   /(_))( /(   ))\\  ))\\   (   )\\())((_) ))\\  \r\n(_)) ((_)\\((_) _ ((_) /(/(   /(/(  (_))  )(_)) /((_)/((_)  )\\ ((_)\\  _  /((_) \r\n| _ \\| |(_)(_)| | (_)((_)_\\ ((_)_\\ | _ \\((_)_ (_)) (_))(  ((_)| |(_)| |(_))   \r\n|  _/| \' \\ | || | | || \'_ \\)| \'_ \\)|   // _` |/ -_)| || |/ _| | \' \\ | |/ -_)  \r\n|_|  |_||_||_||_| |_|| .__/ | .__/ |_|_\\\\__,_|\\___| \\_,_|\\__| |_||_||_|\\___|  \r\n                     |_|    |_|                                             ");
 }
+void printDiag() {
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d /n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
+  logger.printline(buffer);
+}
 }
 
 namespace Sensors {
@@ -265,6 +270,12 @@ public:
     rotatorLeft = Navigation::scheduleConstantLeftRotatorAsync();
     rotatorRight = Navigation::scheduleConstantRightRotatorAsync();
   }
+  bool isLeftMotorActive() {
+    return rotatorLeft->isActive();
+  }
+  bool isRightMotorActive() {
+    return rotatorRight->isActive();
+  }
 private:
   enum NavState { DRIVE = 0,
                   AVOID_ENTRY = 1,
@@ -281,12 +292,10 @@ private:
     logger.printline(buffer);
   }
   void pauseDriving() {
-    logger.printline("setting steppers inactive", "debug"); // might wanna get rid of these
     rotatorLeft->pause();
     rotatorRight->pause();
   }
   void resumeDriving() {
-    logger.printline("setting steppers active", "debug");
     rotatorLeft->resume();
     rotatorRight->resume();
   }
@@ -433,6 +442,8 @@ void setup() {
   Navigation::driver.init();
 
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
+  // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
+  LAS::scheduleRepeated(Navigation::printDiag, 1000, ENDLESS_LOOP);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
