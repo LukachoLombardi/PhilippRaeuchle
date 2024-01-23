@@ -19,7 +19,7 @@ void printPhilipp() {
 void printDiag() {
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d /n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
-  logger.printline(buffer);
+  logger.printline(buffer, "debug");
 }
 }
 
@@ -203,23 +203,20 @@ public:
       if (state == DRIVE) {
         setState(TRANSFER);
       }
-      if (state == AVOID_ENTRY || state == AVOID_EXIT) {
+      else if (state == AVOID_ENTRY || state == AVOID_EXIT) {
         rotateVehicleByAsync(1);
         setState(DRIVE);
         directionR = !directionR;
       }
-      if (state == TRANSFER) {
+      else if (state == TRANSFER) {
         logger.printline("Table Finished!");
         taskPtr->isActive = false;
       }
-      return;
     }
     if (state == DRIVE) {
       if ((Sensors::tof_measure_fw_low.RangeStatus != 4 && Sensors::tof_measure_fw_low.RangeMilliMeter >= SAFETY_DISTANCE)) {
-        logger.printline("no obstacle detected", "debug");
         resumeDriving();
       } else {
-        logger.printline("obstacle detected! Starting AVOID behaviour");
         setState(AVOID_ENTRY);
         pauseDriving();
         rotateVehicleByAsync(3 / 2);
@@ -230,7 +227,13 @@ public:
       } else {
         pauseDriving();
         lastLDist = -1;
-        setState(AVOID_EXIT);
+        if(avoidStage == 2) {
+          rotateVehicleByAsync(-1/4);
+          avoidStage = 0;
+          setState(DRIVING);
+        } else {
+          setState(AVOID_EXIT);
+        }
       }
     } else if (state == AVOID_EXIT) {
       if (lastLDist == -1 || (Sensors::tof_measure_left.RangeStatus != 4 && abs(Sensors::tof_measure_left.RangeMilliMeter - lastLDist) <= UNITY_DISTANCE)) {
@@ -239,7 +242,7 @@ public:
         pauseDriving();
         rotateVehicleByAsync(1 / 4);
         avoidStage++;
-        if (avoidStage <= 3) {
+        if (avoidStage < 3) {
           setState(AVOID_ENTRY);
         } else {
           avoidStage = 0;
@@ -252,7 +255,7 @@ public:
         }
         return;
       }
-      lastLDist = -1;  // might be fucky, test!
+      lastLDist = 1000;  // might be fucky, test!
       if (Sensors::tof_measure_left.RangeStatus != 4) {
         lastLDist = Sensors::tof_measure_left.RangeMilliMeter;
       }
