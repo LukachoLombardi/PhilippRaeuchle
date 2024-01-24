@@ -18,7 +18,7 @@ void printPhilipp() {
 }
 void printDiag() {
   char buffer[BUFFER_SIZE] = "";
-  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d /n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
+  // snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d /n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
   logger.printline(buffer, "debug");
 }
 }
@@ -230,7 +230,7 @@ public:
         if(avoidStage == 2) {
           rotateVehicleByAsync(-1/4);
           avoidStage = 0;
-          setState(DRIVING);
+          setState(DRIVE);
         } else {
           setState(AVOID_EXIT);
         }
