@@ -1,7 +1,6 @@
 #pragma once
-#include <LAS.h>
-#include <Arduino.h>
-#include <Stepper.h>
+#include "CommonIncludes.h"
+#include "Stepper.h"
 
 class StepperRotator : public LAS::Callable {
 public:

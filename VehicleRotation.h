@@ -1,8 +1,6 @@
 #pragma once
-#include <Arduino.h>
-#include <Stepper.h>
-#include <LAS.h>
-#include "PhilippSettings.h"
+#include "CommonIncludes.h"
+#include "Stepper.h"
 
 class VehicleRotation : public LAS::Callable {
 public:
