@@ -6,5 +6,4 @@
 namespace Shared {
 extern Logger logger;
 void printPhilipp();
-void printDiag();
 }

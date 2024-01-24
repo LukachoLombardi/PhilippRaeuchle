@@ -89,7 +89,7 @@ bool Driver::isRightMotorActive() {
 void Driver::setState(NavState state) {
   this->state = state;
   char buffer[BUFFER_SIZE];
-  const char stateChar = char(int(state) + 48);
+  const char stateChar[] = {char(int(state) + 48)};
   strcpy(buffer, "switched state to: ");
   strcat(buffer, stateChar);
   Shared::logger.printline(buffer);
