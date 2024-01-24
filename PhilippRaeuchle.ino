@@ -290,8 +290,9 @@ private:
   void setState(NavState state) {
     this->state = state;
     char buffer[BUFFER_SIZE];
+    const char stateChar = char(int(state)+48);
     strcpy(buffer, "switched state to: ");
-    strcat("buffer", int(state));
+    strcat(buffer, stateChar);
     logger.printline(buffer);
   }
   void pauseDriving() {
