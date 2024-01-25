@@ -15,8 +15,11 @@ VL53L0X_RangingMeasurementData_t tof_measure_right;
 VL53L0X_RangingMeasurementData_t tof_measure_down;
 
 void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
+  char buffer[BUFFER_SIZE] = "";
+  snprintf(buffer, BUFFER_SIZE, "Initalizing tof %x on pin %d", addr, xshutPin);
+  logger.printline(buffer);
   digitalWrite(xshutPin, LOW);
-  tof.begin(addr);
+  tof.begin(addr, true);
 }
 
 void readTOFMMs() {
