@@ -30,6 +30,7 @@ void readTOFMMs() {
 }
 
 void initTOFSensorsAsync() {
+  logger.printline("initalizing tofs...");
   pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
   pinMode(TOF_XSHUT_FW_HIGH, OUTPUT);
   pinMode(TOF_XSHUT_LEFT, OUTPUT);
