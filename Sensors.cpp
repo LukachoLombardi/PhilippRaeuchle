@@ -44,6 +44,9 @@ void initTOFSensorsAsync() {
   digitalWrite(TOF_XSHUT_RIGHT, LOW);
   digitalWrite(TOF_XSHUT_DOWN, LOW);
 
+  delay(100);
+  logger.printline("starting tof init stage...");
+
   TOFAddrInit(tof_fw_low, TOF_XSHUT_FW_LOW, 0x2A);
   TOFAddrInit(tof_fw_high, TOF_XSHUT_FW_HIGH, 0x2B);
   TOFAddrInit(tof_left, TOF_XSHUT_LEFT, 0x2C);
