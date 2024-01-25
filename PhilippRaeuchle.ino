@@ -11,7 +11,15 @@ using namespace Shared;
 
 void printDiag() {
   char buffer[BUFFER_SIZE] = "";
-  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d /n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
+  Sensors::readTOFMMs();
+  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d\n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
+  logger.printline(buffer, "debug");
+  strcpy(buffer, "");
+  snprintf(buffer, BUFFER_SIZE, "tofs are: %d;%d;%d;%d;%d", Sensors::tof_measure_fw_low.RangeMilliMeter, 
+  Sensors::tof_measure_fw_high.RangeMilliMeter,
+  Sensors::tof_measure_left.RangeMilliMeter,
+  Sensors::tof_measure_right.RangeMilliMeter,
+  Sensors::tof_measure_down.RangeMilliMeter);
   logger.printline(buffer, "debug");
 }
 
@@ -148,7 +156,7 @@ void setup() {
 
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
-  LAS::scheduleRepeated(printDiag, 1000, ENDLESS_LOOP);
+  LAS::scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
