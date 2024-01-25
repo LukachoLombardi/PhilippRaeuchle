@@ -15,9 +15,8 @@ VL53L0X_RangingMeasurementData_t tof_measure_right;
 VL53L0X_RangingMeasurementData_t tof_measure_down;
 
 void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
-  digitalWrite(xshutPin, HIGH);
-  tof.begin();
-  tof.setAddress(addr);
+  digitalWrite(xshutPin, LOW);
+  tof.begin(addr);
 }
 
 void readTOFMMs() {
@@ -38,11 +37,11 @@ void initTOFSensorsAsync() {
   pinMode(TOF_XSHUT_DOWN, OUTPUT);
   pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
 
-  digitalWrite(TOF_XSHUT_FW_HIGH, LOW);
-  digitalWrite(TOF_XSHUT_FW_LOW, LOW);
-  digitalWrite(TOF_XSHUT_LEFT, LOW);
-  digitalWrite(TOF_XSHUT_RIGHT, LOW);
-  digitalWrite(TOF_XSHUT_DOWN, LOW);
+  digitalWrite(TOF_XSHUT_FW_HIGH, HIGH);
+  digitalWrite(TOF_XSHUT_FW_LOW, HIGH);
+  digitalWrite(TOF_XSHUT_LEFT, HIGH);
+  digitalWrite(TOF_XSHUT_RIGHT, HIGH);
+  digitalWrite(TOF_XSHUT_DOWN, HIGH);
 
   delay(100);
   logger.printline("starting tof init stage...");
