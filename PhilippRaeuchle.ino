@@ -12,7 +12,7 @@ using namespace Shared;
 void printDiag() {
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
-  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d\n motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
+  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
   logger.printline(buffer, "debug");
   strcpy(buffer, "");
   snprintf(buffer, BUFFER_SIZE, "tofs are: %d;%d;%d;%d;%d", Sensors::tof_measure_fw_low.RangeMilliMeter, 
