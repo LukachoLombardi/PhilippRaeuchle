@@ -18,7 +18,7 @@ void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "Initalizing tof %x on pin %d", addr, xshutPin);
   logger.printline(buffer);
-  digitalWrite(xshutPin, LOW);
+  digitalWrite(xshutPin, HIGH);
   tof.begin(addr, true);
 }
 
@@ -40,11 +40,11 @@ void initTOFSensorsAsync() {
   pinMode(TOF_XSHUT_DOWN, OUTPUT);
   pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
 
-  digitalWrite(TOF_XSHUT_FW_HIGH, HIGH);
-  digitalWrite(TOF_XSHUT_FW_LOW, HIGH);
-  digitalWrite(TOF_XSHUT_LEFT, HIGH);
-  digitalWrite(TOF_XSHUT_RIGHT, HIGH);
-  digitalWrite(TOF_XSHUT_DOWN, HIGH);
+  digitalWrite(TOF_XSHUT_FW_HIGH, LOW);
+  digitalWrite(TOF_XSHUT_FW_LOW, LOW);
+  digitalWrite(TOF_XSHUT_LEFT, LOW);
+  digitalWrite(TOF_XSHUT_RIGHT, LOW);
+  digitalWrite(TOF_XSHUT_DOWN, LOW);
 
   delay(100);
   logger.printline("starting tof init stage...");
