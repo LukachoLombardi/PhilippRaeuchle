@@ -28,6 +28,6 @@ void StepperRotator::unblock() {
   motorsActive = false;
 }
 StepperRotator::StepperRotator(Stepper *stepper, int rotationAmount)
-  : stepper(stepper), rotationAmount(rotationAmount) {}
+  : stepper(stepper), rotationAmount(rotationAmount), isPaused(false) {}
 
 bool StepperRotator::motorsActive = false;

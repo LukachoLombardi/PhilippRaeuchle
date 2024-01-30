@@ -1,6 +1,5 @@
-#include <LAS.h>
 #define LAS_CRITICAL_LAG_MS 1000
-#include <LASConfig.h>
+#include <LAS.h>
 #include <Logger.h>
 
 #include "PhilippSettings.h"

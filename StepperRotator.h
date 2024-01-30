@@ -13,7 +13,7 @@ public:
   StepperRotator(Stepper *stepper, int rotationAmount);
 private:
   Stepper *stepper;
-  bool isPaused = false;
+  bool isPaused;
   int rotationAmount;
   int rotatedSteps = 0;
   static bool motorsActive;
