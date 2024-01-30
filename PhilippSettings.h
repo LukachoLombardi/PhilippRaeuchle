@@ -24,24 +24,24 @@
 //pins
 #define COLOR_SENSOR_PIN 15
 
-#define TOF_XSHUT_FW_LOW 2
-#define TOF_XSHUT_FW_HIGH 3
-#define TOF_XSHUT_LEFT 4
-#define TOF_XSHUT_RIGHT 5
-#define TOF_XSHUT_DOWN 6
+#define TOF_XSHUT_FW_LOW 21
+#define TOF_XSHUT_FW_HIGH 22
+#define TOF_XSHUT_LEFT 23
+#define TOF_XSHUT_RIGHT 24
+#define TOF_XSHUT_DOWN 25
 
-#define LEFT_MOTOR_PIN_0 7
-#define LEFT_MOTOR_PIN_1 8
-#define LEFT_MOTOR_PIN_2 9
-#define LEFT_MOTOR_PIN_3 10
+#define LEFT_MOTOR_PIN_0 1
+#define LEFT_MOTOR_PIN_1 2
+#define LEFT_MOTOR_PIN_2 3
+#define LEFT_MOTOR_PIN_3 4
 
-#define RIGHT_MOTOR_PIN_0 11
-#define RIGHT_MOTOR_PIN_1 12
-#define RIGHT_MOTOR_PIN_2 13
-#define RIGHT_MOTOR_PIN_3 14
+#define RIGHT_MOTOR_PIN_0 5
+#define RIGHT_MOTOR_PIN_1 6
+#define RIGHT_MOTOR_PIN_2 7
+#define RIGHT_MOTOR_PIN_3 8
 
 
 //stepper settings
 #define MOTOR_STEPS_PER_REVOLUTION 2048
-#define MOTOR_SPEED
+#define MOTOR_SPEED 60
 #define MOTOR_STEPSIZE 5

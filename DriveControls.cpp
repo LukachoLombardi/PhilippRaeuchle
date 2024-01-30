@@ -6,8 +6,8 @@ Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_M
 Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
 
 void initSteppers() {
-  leftMotor.setSpeed(10);
-  rightMotor.setSpeed(10);
+  leftMotor.setSpeed(MOTOR_SPEED);
+  rightMotor.setSpeed(MOTOR_SPEED);
   logger.printline("initialized steppers");
 }
 
