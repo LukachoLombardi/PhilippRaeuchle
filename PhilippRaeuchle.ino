@@ -166,6 +166,7 @@ void setup() {
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
   LAS::scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
+  LAS::scheduleRepeated(Sensors::readTOFMMs, 1000, ENDLESS_LOOP);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);

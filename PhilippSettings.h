@@ -44,4 +44,4 @@
 //stepper settings
 #define MOTOR_STEPS_PER_REVOLUTION 200
 #define MOTOR_SPEED 60
-#define MOTOR_STEPSIZE 10
+#define MOTOR_STEPSIZE 1

@@ -4,7 +4,6 @@ void Driver::run() {
   if (VehicleRotation::isRotationActive()) {
     return;
   }
-  Sensors::readTOFMMs();
   if (Sensors::tof_measure_down.RangeMilliMeter >= MAX_TABLE_DISTANCE && Sensors::tof_measure_down.RangeStatus != 4) {
     Shared::logger.printline("end of table reached.");
     pauseDriving();
