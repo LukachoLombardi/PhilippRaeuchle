@@ -125,7 +125,7 @@ private:
     }
     if (strcmp(serialBuffer, "DRIVETEST") == 0) {
       Navigation::driveSizeUnits(5);
-      Navigation::driveSizeUnits(-5);
+      return true;
     }
     if (strcmp(serialBuffer, "NAVINFO") == 0) {
       char buffer[BUFFER_SIZE];
