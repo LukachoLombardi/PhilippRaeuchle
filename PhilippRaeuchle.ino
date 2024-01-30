@@ -9,7 +9,11 @@
 
 using namespace Shared;
 
+bool diagActive = false;
 void printDiag() {
+  if(!diagActive){
+    return;
+  }
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
   snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
@@ -89,6 +93,10 @@ private:
     }
     if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
       StepperRotator::unblock();
+      return true;
+    }
+    if(strcmp(serialBufferm "TOGGLEDIAG")){
+      diagActive = !diagActive;
       return true;
     }
     if (strcmp(serialBuffer, "TOGGLEINFO") == 0) {
