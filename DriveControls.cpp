@@ -24,7 +24,7 @@ void rotateLeftMotorAsync(int steps) {
     return;
   }
   int repeats = steps / MOTOR_STEPSIZE;
-  LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), repeats);
+  LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
   logger.printline(buffer, "debug");
@@ -35,7 +35,7 @@ void rotateRightMotorAsync(int steps) {
     return;
   }
   int repeats = steps / MOTOR_STEPSIZE;
-  LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), repeats);
+  LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
   logger.printline(buffer, "debug");
