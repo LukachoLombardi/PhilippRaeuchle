@@ -28,7 +28,7 @@ void readTOFMMs() {
   tof_fw_high.rangingTest(&tof_measure_fw_high, false);
   tof_left.rangingTest(&tof_measure_left, false);
   tof_right.rangingTest(&tof_measure_right, false);
-  tof_down.rangingTest(&tof_measure_left, false);
+  tof_down.rangingTest(&tof_measure_down, false);
 }
 
 void initTOFSensorsAsync() {
@@ -38,7 +38,6 @@ void initTOFSensorsAsync() {
   pinMode(TOF_XSHUT_LEFT, OUTPUT);
   pinMode(TOF_XSHUT_RIGHT, OUTPUT);
   pinMode(TOF_XSHUT_DOWN, OUTPUT);
-  pinMode(TOF_XSHUT_FW_LOW, OUTPUT);
 
   digitalWrite(TOF_XSHUT_FW_HIGH, LOW);
   digitalWrite(TOF_XSHUT_FW_LOW, LOW);
