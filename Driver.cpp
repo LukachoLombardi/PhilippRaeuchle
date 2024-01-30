@@ -78,6 +78,7 @@ void Driver::init() {
   delete rotatorRight;
   rotatorLeft = DriveControls::scheduleConstantLeftRotatorAsync();
   rotatorRight = DriveControls::scheduleConstantRightRotatorAsync();
+  pauseDriving();
 }
 bool Driver::isLeftMotorActive() {
   return rotatorLeft->isActive();
