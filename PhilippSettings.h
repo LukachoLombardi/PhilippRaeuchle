@@ -30,18 +30,18 @@
 #define TOF_XSHUT_RIGHT 24
 #define TOF_XSHUT_DOWN 25
 
-#define LEFT_MOTOR_PIN_0 1
-#define LEFT_MOTOR_PIN_1 2
-#define LEFT_MOTOR_PIN_2 3
-#define LEFT_MOTOR_PIN_3 4
+#define LEFT_MOTOR_PIN_0 4
+#define LEFT_MOTOR_PIN_1 5
+#define LEFT_MOTOR_PIN_2 6
+#define LEFT_MOTOR_PIN_3 7
 
-#define RIGHT_MOTOR_PIN_0 5
-#define RIGHT_MOTOR_PIN_1 6
-#define RIGHT_MOTOR_PIN_2 7
-#define RIGHT_MOTOR_PIN_3 8
+#define RIGHT_MOTOR_PIN_0 8
+#define RIGHT_MOTOR_PIN_1 9
+#define RIGHT_MOTOR_PIN_2 10
+#define RIGHT_MOTOR_PIN_3 11
 
 
 //stepper settings
 #define MOTOR_STEPS_PER_REVOLUTION 200
 #define MOTOR_SPEED 60
-#define MOTOR_STEPSIZE 50
+#define MOTOR_STEPSIZE 10
