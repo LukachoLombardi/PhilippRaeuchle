@@ -52,7 +52,7 @@ StepperRotator *scheduleConstantRightRotatorAsync() {
 }
 
 StepperRotator *scheduleConstantLeftRotatorAsync() {
-  StepperRotator *rotator = new StepperRotator(&rightMotor, MOTOR_STEPSIZE);
+  StepperRotator *rotator = new StepperRotator(&leftMotor, MOTOR_STEPSIZE);
   LAS::scheduleRepeated(rotator);
   if (checkMotorActivity()) {
     rotator->pause();
@@ -62,7 +62,7 @@ StepperRotator *scheduleConstantLeftRotatorAsync() {
 }
 
 void driveStepsForward(int steps) {
-  rotateRightMotorAsync(steps);
+  rotateLeftMotorAsync(steps);
   rotateRightMotorAsync(steps);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "driving %d steps", steps);
