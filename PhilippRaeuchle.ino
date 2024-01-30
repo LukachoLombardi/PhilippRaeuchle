@@ -1,4 +1,5 @@
 #include <LAS.h>
+#define LAS_CRITICAL_LAG_MS 1000
 #include <LASConfig.h>
 #include <Logger.h>
 
@@ -14,6 +15,7 @@ void printDiag() {
   if(!diagActive){
     return;
   }
+  Serial.println("--- DEBUG PRINT ---");
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
   snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
@@ -25,6 +27,7 @@ void printDiag() {
   Sensors::tof_measure_right.RangeMilliMeter,
   Sensors::tof_measure_down.RangeMilliMeter);
   logger.printline(buffer, "debug");
+  Serial.println("--- DEBUG PRINT ---");
 }
 
 class : public LAS::Callable {
@@ -95,7 +98,7 @@ private:
       StepperRotator::unblock();
       return true;
     }
-    if(strcmp(serialBufferm "TOGGLEDIAG")){
+    if(strcmp(serialBuffer, "TOGGLEDIAG") == 0){
       diagActive = !diagActive;
       return true;
     }
