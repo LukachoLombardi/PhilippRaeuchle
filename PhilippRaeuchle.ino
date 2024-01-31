@@ -1,6 +1,7 @@
+#define LAS_CONFIG
 #define LAS_CRITICAL_LAG_MS 1000
 #define LAS_SCHEDULE_SIZE 64
-#include <LASConfig.h>
+#define LAS_INTERNAL_CHAR_STR_SIZE_UNIT 128
 #include <LAS.h>
 #include <Logger.h>
 
