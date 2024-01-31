@@ -1,4 +1,6 @@
 #define LAS_CRITICAL_LAG_MS 1000
+#define LAS_SCHEDULE_SIZE 64
+#include <LASConfig.h>
 #include <LAS.h>
 #include <Logger.h>
 
@@ -90,7 +92,7 @@ private:
       return true;
     }
     if (strcmp(serialBuffer, "STOPCONSOLE") == 0) {
-      this->taskPtr->isActive = false;
+      LAS::finishTask(taskPtr);
       return true;
     }
     if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
@@ -136,6 +138,7 @@ private:
     }
     if (strcmp(serialBuffer, "PHILIPP") == 0) {
       printPhilipp();
+      Navigation::driver = Driver();
       LAS::scheduleRepeated(&Navigation::driver, ASAP, ENDLESS_LOOP, false);
       return true;
     }
@@ -166,7 +169,7 @@ void setup() {
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
   LAS::scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
-  LAS::scheduleRepeated(Sensors::readTOFMMs, 1000, ENDLESS_LOOP);
+  LAS::scheduleRepeated(Sensors::readTOFMMs, 2000, ENDLESS_LOOP);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);

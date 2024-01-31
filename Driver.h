@@ -8,6 +8,7 @@
 class Driver : public LAS::Callable {
 public:
   Driver();
+  ~Driver();
   void run() override;
   int getStateId();
   int getAvoidStage();

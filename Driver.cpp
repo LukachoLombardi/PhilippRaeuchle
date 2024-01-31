@@ -15,7 +15,7 @@ void Driver::run() {
       directionR = !directionR;
     } else if (state == TRANSFER) {
       Shared::logger.printline("Table Finished!");
-      taskPtr->isActive = false;
+      LAS::finishTask(taskPtr);
     }
   }
   if (state == DRIVE) {
@@ -109,4 +109,8 @@ Driver::Driver() {
   state = DRIVE;
   rotatorLeft = nullptr;
   rotatorRight = nullptr;
+}
+Driver::~Driver(){
+  LAS::finishTask(rotatorLeft->taskPtr);
+  LAS::finishTask(rotatorRight->taskPtr);
 }

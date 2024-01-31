@@ -24,8 +24,8 @@
 //pins
 #define COLOR_SENSOR_PIN 15
 
-#define TOF_XSHUT_FW_LOW 21
-#define TOF_XSHUT_FW_HIGH 22
+#define TOF_XSHUT_FW_LOW 22
+#define TOF_XSHUT_FW_HIGH 26
 #define TOF_XSHUT_LEFT 23
 #define TOF_XSHUT_RIGHT 24
 #define TOF_XSHUT_DOWN 25
