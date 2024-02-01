@@ -69,11 +69,11 @@ void driveStepsForward(int steps) {
   logger.printline(buffer, "info");
 }
 
-void rotateVehicleByAsync(float pi_mul) {
+void rotateVehicleByAsync(float rot_mul) {
   if (VehicleRotation::isRotationActive()) {
     return;
   }
-  int steps = int(ROTATION_REVOLUTIONS * (pi_mul / 2) * MOTOR_STEPS_PER_REVOLUTION);
+  int steps = int(ROTATION_REVOLUTIONS * (rot_mul) * MOTOR_STEPS_PER_REVOLUTION);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
   logger.printline(buffer, "info");
@@ -84,8 +84,8 @@ void rotateVehicleByAsync(float pi_mul) {
   LAS::scheduleRepeated(new VehicleRotation(l, &leftMotor, &rightMotor), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
 }
 
-void rotateVehicleToAsync(float pi_mul) {
-  rotateVehicleByAsync(pi_mul - VehicleRotation::getCurrentVehicleRotation());
+void rotateVehicleToAsync(float rot_mul) {
+  rotateVehicleByAsync(rot_mul - VehicleRotation::getCurrentVehicleRotation());
 }
 
 void driveSizeUnits(float units) {

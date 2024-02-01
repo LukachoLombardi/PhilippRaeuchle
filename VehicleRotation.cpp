@@ -6,7 +6,7 @@ void VehicleRotation::run() {
   } else {
     rightMotor->step(stepSize);
   }
-  setRotationVar(currentVehicleRotation + (PI_MUL_PER_STEPSIZE / 2));
+  setRotationVar(currentVehicleRotation + (ROT_MUL_PER_STEPSIZE / 2));
   if (taskPtr->remainingRepeats == 1) {
     rotationActive = false;
   }
