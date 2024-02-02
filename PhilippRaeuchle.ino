@@ -93,7 +93,7 @@ private:
       return true;
     }
     if (strcmp(serialBuffer, "STOPCONSOLE") == 0) {
-      LAS::finishTask(taskPtr);
+      finish();
       return true;
     }
     if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
