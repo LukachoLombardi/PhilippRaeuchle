@@ -24,7 +24,7 @@ void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
 
 void readTOFMMs() {
   tof_fw_low.rangingTest(&tof_measure_fw_low, false);
-  tof_fw_high.rangingTest(&tof_measure_fw_high, false);
+  //tof_fw_high.rangingTest(&tof_measure_fw_high, false);
   tof_left.rangingTest(&tof_measure_left, false);
   tof_right.rangingTest(&tof_measure_right, false);
   tof_down.rangingTest(&tof_measure_down, false);
@@ -48,7 +48,7 @@ void initTOFSensorsAsync() {
   logger.printline("starting tof init stage...");
 
   TOFAddrInit(tof_fw_low, TOF_XSHUT_FW_LOW, 0x2A);
-  TOFAddrInit(tof_fw_high, TOF_XSHUT_FW_HIGH, 0x2B);
+  //TOFAddrInit(tof_fw_high, TOF_XSHUT_FW_HIGH, 0x2B);
   TOFAddrInit(tof_left, TOF_XSHUT_LEFT, 0x2C);
   TOFAddrInit(tof_right, TOF_XSHUT_RIGHT, 0x2D);
   TOFAddrInit(tof_down, TOF_XSHUT_DOWN, 0x2E);
