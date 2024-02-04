@@ -14,21 +14,28 @@ using namespace Shared;
 
 bool diagActive = false;
 void printDiag() {
-  if(!diagActive){
+  if (!diagActive) {
     return;
   }
   Serial.println(">--- DEBUG PRINT ---");
+
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
   snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
   logger.printline(buffer, "debug");
+
   strcpy(buffer, "");
-  snprintf(buffer, BUFFER_SIZE, "tofs are: %d;%d;%d;%d;%d", Sensors::tof_measure_fw_low.RangeMilliMeter, 
-  Sensors::tof_measure_fw_high.RangeMilliMeter,
-  Sensors::tof_measure_left.RangeMilliMeter,
-  Sensors::tof_measure_right.RangeMilliMeter,
-  Sensors::tof_measure_down.RangeMilliMeter);
+  snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
   logger.printline(buffer, "debug");
+
+  strcpy(buffer, "");
+  snprintf(buffer, BUFFER_SIZE, "tofs are: %d;%d;%d;%d;%d", Sensors::tof_measure_fw_low.RangeMilliMeter,
+           Sensors::tof_measure_fw_high.RangeMilliMeter,
+           Sensors::tof_measure_left.RangeMilliMeter,
+           Sensors::tof_measure_right.RangeMilliMeter,
+           Sensors::tof_measure_down.RangeMilliMeter);
+  logger.printline(buffer, "debug");
+
   Serial.println("--- DEBUG PRINT --->");
 }
 
@@ -100,7 +107,7 @@ private:
       StepperRotator::unblock();
       return true;
     }
-    if(strcmp(serialBuffer, "TOGGLEDIAG") == 0){
+    if (strcmp(serialBuffer, "TOGGLEDIAG") == 0) {
       diagActive = !diagActive;
       return true;
     }
@@ -128,13 +135,6 @@ private:
     }
     if (strcmp(serialBuffer, "DRIVETEST") == 0) {
       Navigation::driveSizeUnits(5);
-      return true;
-    }
-    if (strcmp(serialBuffer, "NAVINFO") == 0) {
-      char buffer[BUFFER_SIZE];
-      strcpy(buffer, "");
-      snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
-      logger.printline(buffer);
       return true;
     }
     if (strcmp(serialBuffer, "PHILIPP") == 0) {
