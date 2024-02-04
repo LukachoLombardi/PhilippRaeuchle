@@ -123,7 +123,7 @@ private:
       return true;
     }
     if (strcmp(serialBuffer, "STEPPERTEST") == 0) {
-      Navigation::rotateVehicleByAsync(1);
+      Navigation::rotateVehicleByAsync(0.25);
       return true;
     }
     if (strcmp(serialBuffer, "DRIVETEST") == 0) {
@@ -170,10 +170,13 @@ void setup() {
   LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
   LAS::scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
-  LAS::scheduleRepeated(Sensors::readTOFMMs, 2000, ENDLESS_LOOP);
   LAS::scheduleFunction(Navigation::initSteppers);
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
+
+  LAS::scheduleRepeated(Sensors::readTOFMMs, 1500, ENDLESS_LOOP);
+  LAS::scheduleFunction(Sensors::readTOFMMs);
+  LAS::scheduleRepeated(&Navigation::driver);
   //add tof and driver
 
   LAS::startScheduler();
