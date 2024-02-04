@@ -2,21 +2,16 @@
 
 void Driver::run() {
   if (state == SETBACK) {
-    if (StepperRotator::areActive()) {
-      return;
-    } else {
+    if (!StepperRotator::areActive()) {
       setState(lastState);
       if (state == DRIVE) {
         setState(TRANSFER_ENTRY);
       } else if (state == AVOID_ENTRY || state == AVOID_EXIT) {
-        DriveControls::rotateVehicleByAsync(0.5);
-        setState(DRIVE);
-        directionR = !directionR;
+        setState(TRANSFER_ENTRY);
       } else if (state == TRANSFER_EXIT) {
         Shared::logger.printline("Table Finished!");
         finish();
       }
-      return;
     }
   }
   if (Sensors::tof_measure_down.RangeMilliMeter >= MAX_TABLE_DISTANCE) {
@@ -77,9 +72,25 @@ void Driver::run() {
       lastLDist = Sensors::tof_measure_left.RangeMilliMeter;
       break;
     case TRANSFER_ENTRY:
-      if(avoidStage <)
+      pauseDriving();
       DriveControls::rotateVehicleByAsync(0.25);
-      avoidStage++;
+      setState(TRANSFER_EXIT);
+      break;
+    case TRANSFER_EXIT:
+      pauseDriving();
+      if (!StepperRotator::areActive()) {
+        if (avoidStage == 0) {
+          avoidStage++;
+          DriveControls::driveSizeUnits(LANE_CHANGE_MUL);
+        } else if (avoidStage == 1) {
+          DriveControls::rotateVehicleByAsync(0.25);
+          avoidStage++;
+        } else if (avoidStage == 2) {
+          avoidStage = 0;
+          directionR ^= true;
+          setState(DRIVE);
+        }
+      }
       break;
   }
 }
