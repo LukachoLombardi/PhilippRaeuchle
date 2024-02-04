@@ -23,7 +23,7 @@ void rotateLeftMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  int repeats = steps / MOTOR_STEPSIZE;
+  int repeats = abs(steps) / MOTOR_STEPSIZE;
   LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
@@ -34,7 +34,7 @@ void rotateRightMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  int repeats = steps / MOTOR_STEPSIZE;
+  int repeats = abs(steps) / MOTOR_STEPSIZE;
   LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
@@ -71,9 +71,10 @@ void driveStepsForward(int steps) {
 
 void rotateVehicleByAsync(float rot_mul) {
   if (VehicleRotation::isRotationActive()) {
+    Shared::logger.printline("vehicle rot blocked because of existing rotation", "warning");
     return;
   }
-  int steps = int(ROTATION_REVOLUTIONS * (rot_mul) * MOTOR_STEPS_PER_REVOLUTION);
+  int steps = int(ROTATION_REVOLUTIONS * (rot_mul)*MOTOR_STEPS_PER_REVOLUTION);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
   logger.printline(buffer, "info");
