@@ -23,7 +23,6 @@ void TOFAddrInit(Adafruit_VL53L0X &tof, int xshutPin, int addr) {
 }
 
 void readTOFMMs() {
-  logger.printline("measuring TOFs...", "debug");
   tof_fw_low.rangingTest(&tof_measure_fw_low, false);
   tof_fw_high.rangingTest(&tof_measure_fw_high, false);
   tof_left.rangingTest(&tof_measure_left, false);
