@@ -77,7 +77,6 @@ void rotateVehicleByAsync(float rot_mul) {
   int steps = int(ROTATION_REVOLUTIONS * (rot_mul)*MOTOR_STEPS_PER_REVOLUTION);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
-  logger.printline(buffer, "info");
   bool l = true;
   if (steps < 0) {
     l = false;
@@ -90,7 +89,7 @@ void rotateVehicleToAsync(float rot_mul) {
 }
 
 void driveSizeUnits(float units) {
-  driveStepsForward(int(units * VEHICLE_STEPS_X));
+  driveStepsForward(units * VEHICLE_STEPS_X);
 }
 
 }
