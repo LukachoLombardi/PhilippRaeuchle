@@ -1,6 +1,11 @@
 #include "Driver.h"
 
 void Driver::run() {
+  if (state == TRANSFER_ENTRY && !VehicleRotation::isRotationActive()) {
+    setState(TRANSFER_EXIT);
+  } else if (state == TRANSFER_ENTRY) {
+    return;
+  }
   if (state == SETBACK) {
     if (!StepperRotator::areActive()) {
       setState(lastState);
@@ -11,10 +16,12 @@ void Driver::run() {
       } else if (state == TRANSFER_EXIT) {
         Shared::logger.printline("Table Finished!");
         finish();
+        return;
       }
+    } else {
+      return;
     }
-  }
-  if (Sensors::tof_measure_down.RangeMilliMeter >= MAX_TABLE_DISTANCE) {
+  } else if (Sensors::tof_measure_down.RangeMilliMeter >= MAX_TABLE_DISTANCE) {
     Shared::logger.printline("end of table reached.");
     pauseDriving();
     setState(SETBACK);
@@ -41,13 +48,7 @@ void Driver::run() {
       } else {
         pauseDriving();
         lastLDist = -1;
-        if (avoidStage == 2) {
-          DriveControls::rotateVehicleByAsync(-0.25);
-          avoidStage = 0;
-          setState(DRIVE);
-        } else {
-          setState(AVOID_EXIT);
-        }
+        setState(AVOID_EXIT);
       }
       break;
     case AVOID_EXIT:
@@ -74,18 +75,19 @@ void Driver::run() {
     case TRANSFER_ENTRY:
       pauseDriving();
       DriveControls::rotateVehicleByAsync(0.25);
-      setState(TRANSFER_EXIT);
       break;
     case TRANSFER_EXIT:
+    Serial.println("a");
       pauseDriving();
       if (!StepperRotator::areActive()) {
+            Serial.println(avoidStage);
         if (avoidStage == 0) {
           avoidStage++;
           DriveControls::driveSizeUnits(LANE_CHANGE_MUL);
         } else if (avoidStage == 1) {
           DriveControls::rotateVehicleByAsync(0.25);
           avoidStage++;
-        } else if (avoidStage == 2) {
+        } else if (avoidStage >= 2) {
           avoidStage = 0;
           directionR ^= true;
           setState(DRIVE);
