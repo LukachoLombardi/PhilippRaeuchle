@@ -1,5 +1,5 @@
 #define LAS_CONFIG
-#define LAS_CRITICAL_LAG_MS 1000
+#define LAS_CRITICAL_LAG_MS 5000
 #define LAS_SCHEDULE_SIZE 64
 #define LAS_INTERNAL_CHAR_STR_SIZE_UNIT 128
 #include <LAS.h>
@@ -25,7 +25,8 @@ void printDiag() {
   logger.printline(buffer, "debug");
 
   strcpy(buffer, "");
-  snprintf(buffer, BUFFER_SIZE, "current rot: %d \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
+  Serial.println(VehicleRotation::getCurrentVehicleRotation());
+  snprintf(buffer, BUFFER_SIZE, "current rot: %f \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
   logger.printline(buffer, "debug");
 
   strcpy(buffer, "");
@@ -174,9 +175,9 @@ void setup() {
   LAS::scheduleFunction(Sensors::initColorSensorAsync);
   LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
 
-  LAS::scheduleRepeated(Sensors::readTOFMMs, 1500, ENDLESS_LOOP);
+  LAS::scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
   LAS::scheduleFunction(Sensors::readTOFMMs);
-  LAS::scheduleRepeated(&Navigation::driver);
+  LAS::scheduleRepeated(&Navigation::driver, 250);
   //add tof and driver
 
   LAS::startScheduler();
