@@ -4,7 +4,7 @@ void StepperRotator::run(){
     motorsActive = true;
     this->stepper->step(rotationAmount);
     rotatedSteps += rotationAmount;
-    if (taskPtr->remainingRepeats == 1) {
+    if (taskPtr->remainingRepeats <= 1) {
       motorsActive = false;
       return;
     }

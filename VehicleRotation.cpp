@@ -7,7 +7,7 @@ void VehicleRotation::run() {
     rightMotor->step(stepSize);
   }
   setRotationVar(currentVehicleRotation + (ROT_MUL_PER_STEPSIZE / 2));
-  if (taskPtr->remainingRepeats == 1) {
+  if (taskPtr->remainingRepeats <= 1) {
     rotationActive = false;
   }
   alternate = !alternate;
@@ -38,4 +38,4 @@ void VehicleRotation::setRotationVar(float pi_mul) {
 }
 
 bool VehicleRotation::rotationActive = false;
-float VehicleRotation::currentVehicleRotation = 0;
+float VehicleRotation::currentVehicleRotation = 0.0;
