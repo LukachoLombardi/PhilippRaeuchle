@@ -1,20 +1,16 @@
 #pragma once
 
 #include "CommonIncludes.h"
-#include "StepperRotator.h"
 #include "Sensors.h"
 #include "DriveControls.h"
 
 class Driver : public LAS::Callable {
 public:
   Driver();
-  ~Driver();
   void run() override;
   int getStateId();
   int getAvoidStage();
   void init();
-  bool isLeftMotorActive();
-  bool isRightMotorActive();
 private:
   enum NavState { DRIVE = 0, // mostly done
                   SETBACK = 7, // done
@@ -32,6 +28,4 @@ private:
   bool directionR;
   NavState state;
   NavState lastState;
-  StepperRotator *rotatorLeft;
-  StepperRotator *rotatorRight;
 };

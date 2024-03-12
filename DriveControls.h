@@ -2,27 +2,32 @@
 
 #include "CommonIncludes.h"
 
-#include <Stepper.h>
-#include "StepperRotator.h"
-#include "VehicleRotation.h"
-
 namespace DriveControls {
 using namespace Shared;
 
-extern Stepper leftMotor;
-extern Stepper rightMotor;
+extern bool driving;
+
+extern bool lastMotorState;
+extern bool rotationActive;
+
+extern float currentVehicleRotation;
 
 void initSteppers();
 
 bool checkMotorActivity();
+bool checkMotorActivitySilent();
+bool isRotationActive();
+void setRotationVar(float pi_mul);
+
+void drive();
+void stop();
+void driveKeepalive();
 
 void rotateLeftMotorAsync(int steps);
 
 void rotateRightMotorAsync(int steps);
 
-StepperRotator *scheduleConstantRightRotatorAsync();
-
-StepperRotator *scheduleConstantLeftRotatorAsync();
+void rotateMotorsAsync(int steps1, int steps2);
 
 void driveStepsForward(int steps);
 

@@ -2,29 +2,49 @@
 
 namespace DriveControls {
 
-Stepper leftMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, LEFT_MOTOR_PIN_0, LEFT_MOTOR_PIN_1, LEFT_MOTOR_PIN_2, LEFT_MOTOR_PIN_3);
-Stepper rightMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, RIGHT_MOTOR_PIN_0, RIGHT_MOTOR_PIN_1, RIGHT_MOTOR_PIN_2, RIGHT_MOTOR_PIN_3);
+bool driving = false;
+
+bool lastMotorState = false;
+bool rotationActive = false;
+
+float currentVehicleRotation = 0.0;
 
 void initSteppers() {
-  leftMotor.setSpeed(MOTOR_SPEED);
-  rightMotor.setSpeed(MOTOR_SPEED);
+  pinMode(MOTOR_FEEDBACK_PIN, INPUT_PULLUP);
   logger.printline("initialized steppers");
+  LAS::scheduleRepeated(driveKeepalive,500);
 }
 
 bool checkMotorActivity() {
-  if (StepperRotator::areActive()) {
+  if (digitalRead(MOTOR_FEEDBACK_PIN) == LOW) {
     logger.printline("rotation blocked because of ongoing rotation", "warning");
     return true;
   }
   return false;
 }
 
+bool checkMotorActivitySilent() {
+  if (digitalRead(MOTOR_FEEDBACK_PIN) == LOW) {
+    return true;
+  }
+  return false;
+}
+
+void rotateMotorsAsync(int steps1, int steps2) {
+    if (checkMotorActivitySilent()) {
+    return;
+  }
+  Serial.write("/");
+  Serial.write(steps1);
+  Serial.write("/");
+  Serial.write(steps2);
+}
+
 void rotateLeftMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  int repeats = abs(steps) / MOTOR_STEPSIZE;
-  LAS::scheduleRepeated(new StepperRotator(&leftMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
+  rotateMotorsAsync(steps, 0);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
   logger.printline(buffer, "debug");
@@ -34,58 +54,72 @@ void rotateRightMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  int repeats = abs(steps) / MOTOR_STEPSIZE;
-  LAS::scheduleRepeated(new StepperRotator(&rightMotor, MOTOR_STEPSIZE * (abs(steps) / steps)), ASAP, repeats);
+  rotateMotorsAsync(0, steps);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
   logger.printline(buffer, "debug");
 }
 
-StepperRotator *scheduleConstantRightRotatorAsync() {
-  StepperRotator *rotator = new StepperRotator(&rightMotor, MOTOR_STEPSIZE);
-  LAS::scheduleRepeated(rotator);
-  if (checkMotorActivity()) {
-    rotator->pause();
-  }
-  logger.printline("start const driving right motor", "debug");
-  return rotator;
+void drive() {
+  driving = true;
 }
-
-StepperRotator *scheduleConstantLeftRotatorAsync() {
-  StepperRotator *rotator = new StepperRotator(&leftMotor, MOTOR_STEPSIZE);
-  LAS::scheduleRepeated(rotator);
-  if (checkMotorActivity()) {
-    rotator->pause();
+void stop() {
+  driving = false;
+  rotateMotorsAsync(0,0);
+}
+void driveKeepalive() {
+  if(driving) {
+    rotateMotorsAsync(MOTOR_STEPS_PER_REVOLUTION, MOTOR_STEPS_PER_REVOLUTION);
   }
-  logger.printline("start const driving left motor", "debug");
-  return rotator;
+  if(lastMotorState != checkMotorActivitySilent() && lastMotorState && rotationActive){
+    rotationActive = false;
+  }
+  lastMotorState = checkMotorActivitySilent();
 }
 
 void driveStepsForward(int steps) {
-  rotateLeftMotorAsync(steps);
-  rotateRightMotorAsync(steps);
+  if (checkMotorActivity()) {
+    return;
+  }
+  rotateMotorsAsync(steps,steps);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "driving %d steps", steps);
   logger.printline(buffer, "info");
 }
 
+bool isRotationActive() {
+  return rotationActive;
+}
+
+void setRotationVar(float pi_mul) {
+  currentVehicleRotation = pi_mul;
+  while (currentVehicleRotation >= 2) {
+    currentVehicleRotation -= 2;
+  }
+  while (currentVehicleRotation < 0) {
+    currentVehicleRotation += 2;
+  }
+}
+
 void rotateVehicleByAsync(float rot_mul) {
-  if (VehicleRotation::isRotationActive()) {
+  if (isRotationActive()) {
     Shared::logger.printline("vehicle rot blocked because of existing rotation", "warning");
     return;
   }
   int steps = int(ROTATION_REVOLUTIONS * (rot_mul)*MOTOR_STEPS_PER_REVOLUTION);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
-  bool l = true;
   if (steps < 0) {
-    l = false;
+    rotateMotorsAsync(steps, -steps);
+  } else {
+    rotateMotorsAsync(-steps, steps);
   }
-  LAS::scheduleRepeated(new VehicleRotation(l, &leftMotor, &rightMotor), ASAP, abs(int(steps / MOTOR_STEPSIZE) * 2));
+  rotationActive = true;
+  setRotationVar(currentVehicleRotation + rot_mul);
 }
 
 void rotateVehicleToAsync(float rot_mul) {
-  rotateVehicleByAsync(rot_mul - VehicleRotation::getCurrentVehicleRotation());
+  rotateVehicleByAsync(rot_mul - currentVehicleRotation);
 }
 
 void driveSizeUnits(float units) {

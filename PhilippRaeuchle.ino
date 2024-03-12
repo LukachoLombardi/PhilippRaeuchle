@@ -21,12 +21,8 @@ void printDiag() {
 
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
-  snprintf(buffer, BUFFER_SIZE, "motorStateLeft is %d motorStateRight is %d", int(Navigation::driver.isLeftMotorActive()), int(Navigation::driver.isRightMotorActive()));
-  logger.printline(buffer, "debug");
 
-  strcpy(buffer, "");
-  Serial.println(VehicleRotation::getCurrentVehicleRotation());
-  snprintf(buffer, BUFFER_SIZE, "current rot: %f \n navState: %d \n avoidStage: %d", VehicleRotation::getCurrentVehicleRotation(), Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
+  snprintf(buffer, BUFFER_SIZE, "current rot: %f \n navState: %d \n avoidStage: %d", DriveControls::currentVehicleRotation, Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
   logger.printline(buffer, "debug");
 
   strcpy(buffer, "");
@@ -102,10 +98,6 @@ private:
     }
     if (strcmp(serialBuffer, "STOPCONSOLE") == 0) {
       finish();
-      return true;
-    }
-    if (strcmp(serialBuffer, "UNBLOCKMOTOR") == 0) {
-      StepperRotator::unblock();
       return true;
     }
     if (strcmp(serialBuffer, "TOGGLEDIAG") == 0) {

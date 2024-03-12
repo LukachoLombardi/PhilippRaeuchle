@@ -1,13 +1,13 @@
 #include "Driver.h"
 
 void Driver::run() {
-  if (state == TRANSFER_ENTRY && !VehicleRotation::isRotationActive()) {
+  if (state == TRANSFER_ENTRY && !DriveControls::isRotationActive()) {
     setState(TRANSFER_EXIT);
   } else if (state == TRANSFER_ENTRY) {
     return;
   }
   if (state == SETBACK) {
-    if (!StepperRotator::areActive()) {
+    if (!DriveControls::checkMotorActivitySilent()) {
       setState(lastState);
       if (state == DRIVE) {
         setState(TRANSFER_ENTRY);
@@ -28,7 +28,7 @@ void Driver::run() {
     DriveControls::driveSizeUnits(-0.25);
     return;
   }
-  if (VehicleRotation::isRotationActive()) {
+  if (DriveControls::isRotationActive()) {
     return;
   }
   // switch those fucking states
@@ -79,7 +79,7 @@ void Driver::run() {
     case TRANSFER_EXIT:
     Serial.println("a");
       pauseDriving();
-      if (!StepperRotator::areActive()) {
+      if (!DriveControls::checkMotorActivitySilent()) {
             Serial.println(avoidStage);
         if (avoidStage == 0) {
           avoidStage++;
@@ -103,17 +103,7 @@ int Driver::getAvoidStage() {
   return avoidStage;
 }
 void Driver::init() {
-  delete rotatorLeft;
-  delete rotatorRight;
-  rotatorLeft = DriveControls::scheduleConstantLeftRotatorAsync();
-  rotatorRight = DriveControls::scheduleConstantRightRotatorAsync();
   pauseDriving();
-}
-bool Driver::isLeftMotorActive() {
-  return rotatorLeft->isActive();
-}
-bool Driver::isRightMotorActive() {
-  return rotatorRight->isActive();
 }
 
 void Driver::setState(NavState state) {
@@ -152,12 +142,10 @@ void Driver::setState(NavState state) {
   Shared::logger.printline(buffer);
 }
 void Driver::pauseDriving() {
-  rotatorLeft->pause();
-  rotatorRight->pause();
+  DriveControls::stop();
 }
 void Driver::resumeDriving() {
-  rotatorLeft->resume();
-  rotatorRight->resume();
+  DriveControls::drive();
 }
 
 Driver::Driver() {
@@ -165,10 +153,4 @@ Driver::Driver() {
   directionR = true;
   state = DRIVE;
   lastState = DRIVE;
-  rotatorLeft = nullptr;
-  rotatorRight = nullptr;
-}
-Driver::~Driver() {
-  rotatorLeft->finish();
-  rotatorRight->finish();
 }
