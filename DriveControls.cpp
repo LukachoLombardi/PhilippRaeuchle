@@ -1,3 +1,4 @@
+#include "LAS.h"
 #include "DriveControls.h"
 
 namespace DriveControls {
@@ -10,13 +11,16 @@ bool rotationActive = false;
 float currentVehicleRotation = 0.0;
 
 void initSteppers() {
-  pinMode(MOTOR_FEEDBACK_PIN, INPUT_PULLUP);
+  pinMode(MOTOR_FEEDBACK_PIN, INPUT);
   logger.printline("initialized steppers");
-  LAS::scheduleRepeated(driveKeepalive,500);
+  Serial1.begin(STEPPER_BAUDRATE);
+  LAS::scheduleFunction(driveKeepalive);
+  LAS::scheduleRepeated(driveKeepalive,60000);
+  LAS::scheduleRepeated(rotationCheckKeepalive);
 }
 
 bool checkMotorActivity() {
-  if (digitalRead(MOTOR_FEEDBACK_PIN) == LOW) {
+  if (digitalRead(MOTOR_FEEDBACK_PIN) == HIGH) {
     logger.printline("rotation blocked because of ongoing rotation", "warning");
     return true;
   }
@@ -24,7 +28,7 @@ bool checkMotorActivity() {
 }
 
 bool checkMotorActivitySilent() {
-  if (digitalRead(MOTOR_FEEDBACK_PIN) == LOW) {
+  if (digitalRead(MOTOR_FEEDBACK_PIN) == HIGH) {
     return true;
   }
   return false;
@@ -34,17 +38,17 @@ void rotateMotorsAsync(int steps1, int steps2) {
     if (checkMotorActivitySilent()) {
     return;
   }
-  Serial.write("/");
-  Serial.write(steps1);
-  Serial.write("/");
-  Serial.write(steps2);
+  Serial1.print("/");
+  Serial1.print(steps1);
+  Serial1.print("/");
+  Serial1.print(steps2);
 }
 
 void rotateLeftMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  rotateMotorsAsync(steps, 0);
+  rotateMotorsAsync(steps, -1);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating left motor by %d", steps);
   logger.printline(buffer, "debug");
@@ -54,7 +58,7 @@ void rotateRightMotorAsync(int steps) {
   if (checkMotorActivity()) {
     return;
   }
-  rotateMotorsAsync(0, steps);
+  rotateMotorsAsync(-1, steps);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating right motor by %d", steps);
   logger.printline(buffer, "debug");
@@ -69,8 +73,11 @@ void stop() {
 }
 void driveKeepalive() {
   if(driving) {
-    rotateMotorsAsync(MOTOR_STEPS_PER_REVOLUTION, MOTOR_STEPS_PER_REVOLUTION);
+    rotateMotorsAsync(MOTOR_STEPS_PER_REVOLUTION*100, MOTOR_STEPS_PER_REVOLUTION*100);
   }
+}
+
+void rotationCheckKeepalive() {
   if(lastMotorState != checkMotorActivitySilent() && lastMotorState && rotationActive){
     rotationActive = false;
   }

@@ -22,6 +22,7 @@ void setRotationVar(float pi_mul);
 void drive();
 void stop();
 void driveKeepalive();
+void rotationCheckKeepalive();
 
 void rotateLeftMotorAsync(int steps);
 

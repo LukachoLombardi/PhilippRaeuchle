@@ -33,7 +33,7 @@
 #define TOF_XSHUT_DOWN 25
 
 #define MOTOR_FEEDBACK_PIN 10
-#define MOTOR_TOGGLE_PIN 11
+#define STEPPER_BAUDRATE 9600
 
 //stepper settings
 #define MOTOR_STEPS_PER_REVOLUTION 200
