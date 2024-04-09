@@ -37,4 +37,6 @@ void rotateVehicleByAsync(float rot_mul);
 void rotateVehicleToAsync(float rot_mul);
 
 void driveSizeUnits(float units);
+
+void sendMotorSignalsAsync(int sig1, int sig2);
 }

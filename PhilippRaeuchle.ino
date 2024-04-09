@@ -22,8 +22,10 @@ void printDiag() {
   char buffer[BUFFER_SIZE] = "";
   Sensors::readTOFMMs();
 
-  snprintf(buffer, BUFFER_SIZE, "current rot: %f \n navState: %d \n avoidStage: %d", DriveControls::currentVehicleRotation, Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
+  snprintf(buffer, BUFFER_SIZE, "navState: %d \n avoidStage: %d", Navigation::driver.getStateId(), Navigation::driver.getAvoidStage());
   logger.printline(buffer, "debug");
+  Serial.print("currentRot:");
+  Serial.println(DriveControls::currentVehicleRotation);
 
   strcpy(buffer, "");
   snprintf(buffer, BUFFER_SIZE, "tofs are: %d;%d;%d;%d;%d", Sensors::tof_measure_fw_low.RangeMilliMeter,
@@ -169,7 +171,7 @@ void setup() {
 
   LAS::scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
   LAS::scheduleFunction(Sensors::readTOFMMs);
-  LAS::scheduleRepeated(&Navigation::driver, 250);
+  LAS::scheduleRepeated(&Navigation::driver, 1000);
   //add tof and driver
 
   LAS::startScheduler();

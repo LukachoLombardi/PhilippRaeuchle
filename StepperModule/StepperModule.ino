@@ -10,7 +10,7 @@ int dataIn2 = 0;
 constexpr int FEEDBACK_PIN = 10;
 
 constexpr float STEPPER_MAX_SPEED = 150;
-constexpr float STEPPER_ACCEL = 50;
+constexpr float STEPPER_ACCEL = 200;
 constexpr float STEPPER_STOP_DECCEL = 250;
 constexpr int STEP_AMOUNT = 200;
 

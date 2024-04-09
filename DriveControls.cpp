@@ -35,13 +35,17 @@ bool checkMotorActivitySilent() {
 }
 
 void rotateMotorsAsync(int steps1, int steps2) {
-    if (checkMotorActivitySilent()) {
+  if (checkMotorActivitySilent()) {
     return;
   }
+  sendMotorSignalsAsync(steps1, steps2);
+}
+
+void sendMotorSignalsAsync(int sig1, int sig2) {
   Serial1.print("/");
-  Serial1.print(steps1);
+  Serial1.print(sig1);
   Serial1.print("/");
-  Serial1.print(steps2);
+  Serial1.print(sig2);
 }
 
 void rotateLeftMotorAsync(int steps) {
@@ -65,11 +69,17 @@ void rotateRightMotorAsync(int steps) {
 }
 
 void drive() {
+  if(!driving) {
+    logger.printline("start driving");
+  }
   driving = true;
 }
 void stop() {
+  if(driving) {
+    logger.printline("stop driving");
+  }
   driving = false;
-  rotateMotorsAsync(0,0);
+  sendMotorSignalsAsync(0,0);
 }
 void driveKeepalive() {
   if(driving) {

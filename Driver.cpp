@@ -37,9 +37,13 @@ void Driver::run() {
       if ((Sensors::tof_measure_fw_low.RangeMilliMeter >= SAFETY_DISTANCE)) {
         resumeDriving();
       } else {
+        resumeDriving();
+        // deactivated for now
+        /*
         setState(AVOID_ENTRY);
         pauseDriving();
         DriveControls::rotateVehicleByAsync(0.75);
+        */
       }
       break;
     case AVOID_ENTRY:
@@ -74,13 +78,12 @@ void Driver::run() {
       break;
     case TRANSFER_ENTRY:
       pauseDriving();
-      DriveControls::rotateVehicleByAsync(0.25);
+      DriveControls::rotateVehicleByAsync(0.25 * getDirMul());
       break;
     case TRANSFER_EXIT:
-    Serial.println("a");
       pauseDriving();
       if (!DriveControls::checkMotorActivitySilent()) {
-            Serial.println(avoidStage);
+        Serial.println(avoidStage);
         if (avoidStage == 0) {
           avoidStage++;
           DriveControls::driveSizeUnits(LANE_CHANGE_MUL);
@@ -146,6 +149,14 @@ void Driver::pauseDriving() {
 }
 void Driver::resumeDriving() {
   DriveControls::drive();
+}
+int Driver::getDirMul() {
+  if(directionR) {
+    return 1;
+  }
+  else {
+    return -1;
+  }
 }
 
 Driver::Driver() {

@@ -24,6 +24,7 @@ private:
   void setState(NavState state);
   void pauseDriving();
   void resumeDriving();
+  int getDirMul();
   int lastLDist;
   bool directionR;
   NavState state;
