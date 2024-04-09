@@ -46,6 +46,7 @@ void sendMotorSignalsAsync(int sig1, int sig2) {
   Serial1.print(sig1);
   Serial1.print("/");
   Serial1.print(sig2);
+  while(!checkMotorActivitySilent()); // experimental check to ensure motor state integrity
 }
 
 void rotateLeftMotorAsync(int steps) {

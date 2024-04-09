@@ -7,6 +7,8 @@ AccelStepper stepperRight = AccelStepper(AccelStepper::FULL4WIRE, 6, 7, 8, 9);
 int dataIn1 = 0;
 int dataIn2 = 0;
 
+bool motorsActive = false;
+
 constexpr int FEEDBACK_PIN = 10;
 
 constexpr float STEPPER_MAX_SPEED = 150;
@@ -29,6 +31,8 @@ void setup() {
 
 void serialRead() {
   if (Serial.available() > 0) {
+    motorsActive = true;
+    digitalWrite(FEEDBACK_PIN, HIGH);
     Serial.println("receiving");
     Serial.println(Serial.peek());
     dataIn1 = Serial.parseInt();
@@ -56,12 +60,15 @@ void serialRead() {
 
 void loop() {
   serialRead();
+  motorsActive = (stepperLeft.isRunning() || stepperRight.isRunning());
 
-  if(stepperLeft.isRunning() || stepperRight.isRunning()) {
+  if(motorsActive) {
     digitalWrite(FEEDBACK_PIN, HIGH);
   } else {
     digitalWrite(FEEDBACK_PIN, LOW);
   }
+
+  Serial.println(motorsActive);
 
   stepperLeft.run();
   stepperRight.run();
