@@ -46,7 +46,14 @@ void sendMotorSignalsAsync(int sig1, int sig2) {
   Serial1.print(sig1);
   Serial1.print("/");
   Serial1.print(sig2);
-  while(!checkMotorActivitySilent()) {}; // experimental check to ensure motor state integrity
+
+  long startTime = millis();
+  while(!checkMotorActivitySilent()) {
+    if(millis() - startTime >= MAX_STEPPER_RESPONSE_MS) {
+      logger.printline("didn't get valid stepper response in time", "warning");
+      break;
+    }
+  }
 }
 
 void rotateLeftMotorAsync(int steps) {
@@ -81,6 +88,10 @@ void stop() {
   }
   driving = false;
   sendMotorSignalsAsync(0,0);
+
+  while(checkMotorActivitySilent()) {
+    millis();
+  }
 }
 void driveKeepalive() {
   if(driving) {

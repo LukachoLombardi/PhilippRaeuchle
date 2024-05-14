@@ -31,8 +31,6 @@ void setup() {
 
 void serialRead() {
   if (Serial.available() > 0) {
-    motorsActive = true;
-    digitalWrite(FEEDBACK_PIN, HIGH);
     Serial.println("receiving");
     Serial.println(Serial.peek());
     dataIn1 = Serial.parseInt();
@@ -55,6 +53,9 @@ void serialRead() {
     dataIn1 = -1;
     dataIn2 = -1;
     Serial.flush();
+
+    motorsActive = true;
+    digitalWrite(FEEDBACK_PIN, HIGH);
   }
 }
 
