@@ -172,7 +172,7 @@ void setup() {
 
   LAS::scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
   LAS::scheduleFunction(Sensors::readTOFMMs);
-  LAS::scheduleRepeated(&Navigation::driver, 1000);
+  LAS::scheduleRepeated(&Navigation::driver, 500);
   //add tof and driver
 
   LAS::startScheduler();
