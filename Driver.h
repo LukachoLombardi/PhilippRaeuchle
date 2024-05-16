@@ -4,7 +4,7 @@
 #include "Sensors.h"
 #include "DriveControls.h"
 
-class Driver : public LAS::Callable {
+class Driver : public Callable {
 public:
   Driver();
   void run() override;

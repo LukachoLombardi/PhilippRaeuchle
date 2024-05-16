@@ -29,7 +29,7 @@ void initTOFSensorsAsync();
 
 void readColor(float *r, float *g, float *b);
 
-class : public LAS::Callable {
+class : public Callable {
 public:
   void run() override {
     readColor(&red, &green, &blue);

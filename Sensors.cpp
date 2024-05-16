@@ -63,7 +63,7 @@ void initColorSensorAsync() {
     logger.printline("No TCS34725 found!", "severe");
     return;
   }
-  LAS::scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
+  las.scheduleRepeated(&colorReader, 50, ENDLESS_LOOP, false);
   logger.printline("initialized TCS");
 }
 }

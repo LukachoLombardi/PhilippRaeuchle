@@ -1,4 +1,3 @@
-#include "LAS.h"
 #include "DriveControls.h"
 
 namespace DriveControls {
@@ -14,9 +13,9 @@ void initSteppers() {
   pinMode(MOTOR_FEEDBACK_PIN, INPUT);
   logger.printline("initialized steppers");
   Serial1.begin(STEPPER_BAUDRATE);
-  LAS::scheduleFunction(driveKeepalive);
-  LAS::scheduleRepeated(driveKeepalive,60000);
-  LAS::scheduleRepeated(rotationCheckKeepalive);
+  las.scheduleFunction(driveKeepalive);
+  las.scheduleRepeated(driveKeepalive,60000);
+  las.scheduleRepeated(rotationCheckKeepalive);
 }
 
 bool checkMotorActivity() {

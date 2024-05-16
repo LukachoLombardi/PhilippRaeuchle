@@ -1,9 +1,8 @@
-#define LAS_CONFIG
-#define LAS_CRITICAL_LAG_WARN false
-#define LAS_CRITICAL_LAG_MS 5000
-#define LAS_SCHEDULE_SIZE 64
-#define LAS_INTERNAL_CHAR_STR_SIZE_UNIT 128
 #include <LAS.h>
+#include <LASConfig.h>
+#include <Callable.h>
+#include <LASMacros.h>
+
 #include <Logger.h>
 
 #include "PhilippSettings.h"
@@ -39,7 +38,7 @@ void printDiag() {
   Serial.println("--- DEBUG PRINT --->");
 }
 
-class : public LAS::Callable {
+class : public Callable {
 public:
   void run() override {
     if (Serial.available() <= 0) {
@@ -87,16 +86,16 @@ private:
         ;
     }
     if (strcmp(serialBuffer, "TASKS") == 0) {
-      LAS::printSchedule();
+      las.printSchedule();
       return true;
     }
     if (strcmp(serialBuffer, "CLEARTASKS") == 0) {
-      LAS::clearSchedule();
-      LAS::scheduleRepeated(this);
+      las.clearSchedule();
+      las.scheduleRepeated(this);
       return true;
     }
     if (strcmp(serialBuffer, "CLEARALLTASKS") == 0) {  //also clears itself
-      LAS::clearSchedule();
+      las.clearSchedule();
       return true;
     }
     if (strcmp(serialBuffer, "STOPCONSOLE") == 0) {
@@ -136,7 +135,7 @@ private:
     if (strcmp(serialBuffer, "PHILIPP") == 0) {
       printPhilipp();
       Navigation::driver = Driver();
-      LAS::scheduleRepeated(&Navigation::driver, ASAP, ENDLESS_LOOP, false);
+      las.scheduleRepeated(&Navigation::driver, ASAP, ENDLESS_LOOP, false);
       return true;
     }
     if (strcmp(serialBuffer, "RESET") == 0) {
@@ -160,22 +159,22 @@ void setup() {
   printPhilipp();
   logger.printline("PhilippRaeuchle started");
 
-  LAS::initScheduler(logger);
+  las.initScheduler(LASConfig(), logger);
   Navigation::driver.init();
 
-  LAS::scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
+  las.scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
-  LAS::scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
-  LAS::scheduleFunction(Navigation::initSteppers);
-  LAS::scheduleFunction(Sensors::initColorSensorAsync);
-  LAS::scheduleFunction(Sensors::initTOFSensorsAsync);
+  las.scheduleRepeated(printDiag, 5000, ENDLESS_LOOP);
+  las.scheduleFunction(Navigation::initSteppers);
+  las.scheduleFunction(Sensors::initColorSensorAsync);
+  las.scheduleFunction(Sensors::initTOFSensorsAsync);
 
-  LAS::scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
-  LAS::scheduleFunction(Sensors::readTOFMMs);
-  LAS::scheduleRepeated(&Navigation::driver, 500);
+  las.scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
+  las.scheduleFunction(Sensors::readTOFMMs);
+  las.scheduleRepeated(&Navigation::driver, 500);
   //add tof and driver
 
-  LAS::startScheduler();
+  las.startScheduler();
 }
 
 void loop() {
