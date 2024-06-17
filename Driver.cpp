@@ -25,7 +25,7 @@ void Driver::run() {
     Shared::logger.printline("end of table reached.");
     pauseDriving();
     setState(SETBACK);
-    DriveControls::driveSizeUnits(-0.25);
+    DriveControls::driveSizeUnits(-SETBACK_MUL);
     return;
   }
   if (DriveControls::isRotationActive()) {
@@ -78,7 +78,7 @@ void Driver::run() {
       break;
     case TRANSFER_ENTRY:
       pauseDriving();
-      DriveControls::rotateVehicleByAsync(0.25 * getDirMul());
+      DriveControls::rotateVehicleByAsync(0.25);
       break;
     case TRANSFER_EXIT:
       pauseDriving();
@@ -106,7 +106,7 @@ int Driver::getAvoidStage() {
   return avoidStage;
 }
 void Driver::init() {
-  pauseDriving();
+  //pauseDriving();
 }
 
 void Driver::setState(NavState state) {
