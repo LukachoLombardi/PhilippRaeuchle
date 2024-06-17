@@ -81,7 +81,6 @@ void Driver::run() {
       DriveControls::rotateVehicleByAsync(0.25);
       break;
     case TRANSFER_EXIT:
-      pauseDriving();
       if (!DriveControls::checkMotorActivitySilent()) {
         Serial.println(avoidStage);
         if (avoidStage == 0) {
