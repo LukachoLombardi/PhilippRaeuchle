@@ -12,8 +12,8 @@ bool motorsActive = false;
 constexpr int FEEDBACK_PIN = 10;
 
 constexpr float STEPPER_MAX_SPEED = 150;
-constexpr float STEPPER_ACCEL = 200;
-constexpr float STEPPER_STOP_DECCEL = 250;
+constexpr float STEPPER_ACCEL = 500;
+constexpr float STEPPER_STOP_DECCEL = 800;
 constexpr int STEP_AMOUNT = 200;
 
 constexpr int BAUDRATE = 9600;
@@ -69,7 +69,7 @@ void loop() {
     digitalWrite(FEEDBACK_PIN, LOW);
   }
 
-  Serial.println(motorsActive);
+  //Serial.println(motorsActive);
 
   stepperLeft.run();
   stepperRight.run();
