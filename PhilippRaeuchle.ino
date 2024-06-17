@@ -159,8 +159,13 @@ void setup() {
   printPhilipp();
   logger.printline("PhilippRaeuchle started");
 
-  las.initScheduler(LASConfig(), logger);
-  Navigation::driver.init();
+  LASConfig conf = LASConfig(
+    16,
+    false,
+    50,
+    128
+  );
+  las.initScheduler(conf, logger);
 
   las.scheduleRepeated(&serialConsole, ASAP, ENDLESS_LOOP, false);
   // TODO: Add other annoying debug messages about driving to the diag, add command to toggle it
@@ -172,7 +177,8 @@ void setup() {
   las.scheduleRepeated(Sensors::readTOFMMs, 200, ENDLESS_LOOP);
   las.scheduleFunction(Sensors::readTOFMMs);
   las.scheduleRepeated(&Navigation::driver, 500);
-  //add tof and driver
+
+  //Navigation::driver.init();
 
   las.startScheduler();
 }
