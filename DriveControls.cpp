@@ -50,8 +50,8 @@ void sendMotorSignalsAsync(int sig1, int sig2) {
   long startTime = millis();
   while(!checkMotorActivitySilent()) {
     if(millis() - startTime >= MAX_STEPPER_RESPONSE_MS) {
-      logger.printline("didn't get valid stepper response in time", "warning");
-      break;
+      logger.printline("Stepper core out of sync. Halting!", Logger::LogLevel::Severe);
+      while(true){millis();}
     }
   }
 }
@@ -81,6 +81,7 @@ void drive() {
     logger.printline("start driving");
   }
   driving = true;
+  driveKeepalive();
 }
 void stop() {
   if(driving) {
@@ -89,8 +90,12 @@ void stop() {
   driving = false;
   sendMotorSignalsAsync(0,0);
 
+  long startTime = millis();
   while(checkMotorActivitySilent()) {
-    millis();
+    if(millis() - startTime >= MAX_STEPPER_RESPONSE_MS) {
+      logger.printline("Stepper core out of sync. Halting!", Logger::LogLevel::Severe);
+      while(true){millis();}
+    }
   }
 }
 void driveKeepalive() {

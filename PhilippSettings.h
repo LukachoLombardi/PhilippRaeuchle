@@ -5,7 +5,7 @@
 
 #define BAUDRATE 115200
 
-#define MAX_STEPPER_RESPONSE_MS 5000
+#define MAX_STEPPER_RESPONSE_MS 10000
 
 // still gotta define these
 #define WHEEL_RADIUS 25 // actually like 35mm
