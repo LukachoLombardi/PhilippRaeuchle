@@ -66,7 +66,7 @@ void Driver::run() {
           setState(AVOID_ENTRY);
         } else {
           avoidStage = 0;
-          if (directionR) {
+          if (directionL) {
             DriveControls::rotateVehicleToAsync(0);
           } else {
             DriveControls::rotateVehicleToAsync(0.5);
@@ -78,7 +78,7 @@ void Driver::run() {
       break;
     case TRANSFER_ENTRY:
       pauseDriving();
-      DriveControls::rotateVehicleByAsync(0.25);
+      DriveControls::rotateVehicleByAsync(0.25 * getDirMul());
       break;
     case TRANSFER_EXIT:
       if (!DriveControls::checkMotorActivitySilent()) {
@@ -87,11 +87,11 @@ void Driver::run() {
           avoidStage++;
           DriveControls::driveSizeUnits(LANE_CHANGE_MUL);
         } else if (avoidStage == 1) {
-          DriveControls::rotateVehicleByAsync(0.25);
+          DriveControls::rotateVehicleByAsync(0.25 * getDirMul());
           avoidStage++;
         } else if (avoidStage >= 2) {
           avoidStage = 0;
-          directionR ^= true;
+          directionL ^= true;
           setState(DRIVE);
         }
       }
@@ -150,7 +150,7 @@ void Driver::resumeDriving() {
   DriveControls::drive();
 }
 int Driver::getDirMul() {
-  if(directionR) {
+  if(directionL) {
     return 1;
   }
   else {
@@ -160,7 +160,7 @@ int Driver::getDirMul() {
 
 Driver::Driver() {
   lastLDist = 0;
-  directionR = true;
+  directionL = true;
   state = DRIVE;
   lastState = DRIVE;
 }
