@@ -15,7 +15,7 @@ void initSteppers() {
   Serial1.begin(STEPPER_BAUDRATE);
   sendMotorSignalsAsync(0,0);
   las.scheduleFunction(driveKeepalive);
-  las.scheduleRepeated(driveKeepalive,60000);
+  las.scheduleRepeated(driveKeepalive,10000);
   las.scheduleRepeated(rotationCheckKeepalive);
 }
 
@@ -49,9 +49,16 @@ void sendMotorSignalsAsync(int sig1, int sig2) {
 
   long startTime = millis();
   while(!checkMotorActivitySilent()) {
-    if(millis() - startTime >= MAX_STEPPER_RESPONSE_MS) {
+    /* if(millis() - startTime >= MAX_STEPPER_RESPONSE_MS) {
       logger.printline("Stepper core out of sync. Halting!", Logger::LogLevel::Severe);
       while(true){millis();}
+    } */
+    if(millis() - startTime >= STEPPER_RECHECK_TIME) {
+      startTime = millis();
+      Serial1.print("/");
+      Serial1.print(sig1);
+      Serial1.print("/");
+      Serial1.print(sig2);
     }
   }
 }
@@ -143,11 +150,8 @@ void rotateVehicleByAsync(float rot_mul) {
   int steps = int(ROTATION_REVOLUTIONS * (rot_mul)*MOTOR_STEPS_PER_REVOLUTION);
   char buffer[BUFFER_SIZE] = "";
   snprintf(buffer, BUFFER_SIZE, "rotating vehicle by %d", steps);
-  if (steps < 0) {
-    rotateMotorsAsync(steps, -steps);
-  } else {
+  logger.printline(buffer);
     rotateMotorsAsync(-steps, steps);
-  }
   rotationActive = true;
   setRotationVar(currentVehicleRotation + rot_mul);
 }
