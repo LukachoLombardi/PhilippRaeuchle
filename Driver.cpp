@@ -14,8 +14,9 @@ void Driver::run() {
       } else if (state == AVOID_ENTRY || state == AVOID_EXIT) {
         setState(TRANSFER_ENTRY);
       } else if (state == TRANSFER_EXIT) {
-        Shared::logger.printline("Table Finished!");
-        finish();
+        /*Shared::logger.printline("Table Finished!");
+        finish();*/
+        setState(DRIVE);
         return;
       }
     } else {
